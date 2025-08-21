@@ -1,103 +1,58 @@
+"use client";
 import Image from "next/image";
+import Input from "./components/Input";
+import Button from "./components/Button";
+import "./globals.css";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <main className="min-h-screen flex ">
+      {/* Left Panel */}
+      <div className="w-1/2 bg-[#A5C531]/25 flex justify-center items-center ">
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+          src="/foodie_logo.png"
+          alt="Foodie logo"
+          width={490}
+          height={490}
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Right Panel */}
+      {/* The `items-center` class was removed from this container */}
+      <div className="w-1/2 bg-[#FCFBF8] flex flex-col justify-start items-center pt-[65px] px-24">
+        {/* I've added a new container here for the form elements */}
+        <div className="w-full max-w-[600px]">
+          <h1 className="font-bogue text-9xl text-center">foodie</h1>
+          <h3 className="font-bogue text-[#000000]/50 text-4xl mt-[77px] py-[20px] text-center">
+            Welcome to foodie!
+          </h3>
+
+          <label className="sr-only" htmlFor="username">
+            Username
+          </label>
+          <Input id="username" placeholder="Username" />
+
+          <label className="sr-only" htmlFor="password">
+            Password
+          </label>
+          <Input id="password" placeholder="Password" />
+
+          {/* This div now correctly aligns the "Forgot Password?" link to the right */}
+          <div className="w-full flex justify-end mb-[49px]">
+            <a
+              className="text-[#A5C531] font-bold text-1xl hover:underline"
+              href="/forgot-password"
+            >
+              Forgot Password?
+            </a>
+          </div>
+
+          <Button onClick={() => {}}>Sign In</Button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <h5 className="font-inter font-bold text-[#424242]/50 text-1xl mt-[20px]">
+          New to Foodie? <a href="/sign-up" className="text-[#A5C531] hover:underline">Create Account</a>
+        </h5>
+      </div>
+    </main>
   );
 }

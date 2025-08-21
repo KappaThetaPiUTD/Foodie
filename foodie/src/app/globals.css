@@ -3,6 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-inter: 'Inter', sans-serif;
+}
+
+@font-face {
+  font-family: 'Bogue';
+  src: url('../../public/fonts/Bogue-Black.woff2') format('woff2');
+  font-display: swap;
+  font-style: normal;
+  font-weight: 100;
+}
+
+@theme{
+  --font-bogue: 'Bogue', sans-serif;
 }
 
 @theme inline {
@@ -14,9 +27,13 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #FCFBF8;
+    --foreground: #424242;
   }
+}
+
+.font-inter {
+  font-family: var(--font-inter);
 }
 
 body {
