@@ -1,0 +1,34 @@
+{
+  "name": "foodiemaps",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "dev:web": "next dev -p $PORT",
+    "build:web": "next build",
+    "start:web": "next start -p 3001",
+    "server": "node server.js",
+    "dev:all": "concurrently \"PORT=3001 npm run dev:web\" \"PORT=3002 npm run dev:web\" \"npm run server\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@react-google-maps/api": "^2.20.7",
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.17.1",
+    "next": "^15.4.6",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
