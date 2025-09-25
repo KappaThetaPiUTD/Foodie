@@ -7,54 +7,137 @@ A collaborative food discovery app where people can join lobbies, share food pre
 ```
 FoodieMaps/
 ├── apps/
-│   ├── web/                    # 🎨 FRONTEND ONLY
-│   │   ├── .env.local         # Frontend environment variables
-│   │   ├── package.json       # Frontend dependencies
-│   │   ├── next.config.js     # Next.js configuration
+│   ├── web/                          # 🎨 FRONTEND ONLY
+│   │   ├── .env.local               # 🎨 FRONTEND - Environment variables
+│   │   ├── package.json             # 🎨 FRONTEND - Dependencies
+│   │   ├── next.config.js           # 🎨 FRONTEND - Next.js configuration
 │   │   ├── pages/
-│   │   │   └── index.js       # Main page component
-│   │   └── src/components/
-│   │       └── Map.jsx        # Map component with all UI logic
-│   └── server/                 # 🔧 BACKEND ONLY
-│       ├── .env               # Backend environment variables
-│       ├── package.json       # Backend dependencies
+│   │   │   └── index.js             # 🎨 FRONTEND - Main page entry point
+│   │   └── src/
+│   │       ├── components/          # 🎨 FRONTEND - React UI components
+│   │       │   ├── Map.jsx                 # 🎨 FRONTEND - Main orchestrator
+│   │       │   ├── LobbyManager.jsx        # 🎨 FRONTEND - Session management UI
+│   │       │   ├── PreferencesPanel.jsx   # 🎨 FRONTEND - Food preferences UI
+│   │       │   ├── LocationControls.jsx   # 🎨 FRONTEND - Route planning controls
+│   │       │   ├── MapView.jsx             # 🎨 FRONTEND - Google Maps display
+│   │       │   └── RestaurantList.jsx     # 🎨 FRONTEND - Restaurant results
+│   │       └── hooks/               # 🎨 FRONTEND - Custom React hooks
+│   │           ├── useSession.js           # 🎨 FRONTEND - Session management
+│   │           ├── usePreferences.js       # 🎨 FRONTEND - Preferences logic
+│   │           ├── useRouting.js           # 🎨 FRONTEND - Route calculation
+│   │           └── useRestaurants.js       # 🎨 FRONTEND - Restaurant search
+│   └── server/                       # 🔧 BACKEND ONLY
+│       ├── .env                     # 🔧 BACKEND - Environment variables
+│       ├── package.json             # 🔧 BACKEND - Dependencies
 │       └── src/
-│           └── index.js       # Express server + Socket.IO
-├── package.json               # Root workspace configuration
-├── package-lock.json          # Dependency lock file
-├── .gitignore                 # Git ignore rules
-└── README.md                  # This file
+│           └── index.js             # 🔧 BACKEND - Express server + Socket.IO
+├── package.json                     # 📁 SHARED - Root workspace config
+├── package-lock.json                # 📁 SHARED - Dependency lock file
+├── .gitignore                       # 📁 SHARED - Git ignore rules
+└── README.md                        # 📁 SHARED - Documentation
 ```
 
-### File Classification
+### Frontend Architecture (Modular Components)
 
-#### 🎨 Frontend Files (`apps/web/`)
-- **`pages/index.js`** - Main Next.js page that renders the app
-- **`src/components/Map.jsx`** - Core React component containing:
-  - Google Maps integration
-  - User interface (forms, buttons, preferences)
-  - State management (React hooks)
-  - Browser APIs (geolocation, localStorage)
-  - Client-side routing and restaurant search logic
-- **`package.json`** - Frontend dependencies (React, Next.js, Google Maps)
-- **`next.config.js`** - Next.js build configuration
-- **`.env.local`** - Frontend environment variables (API keys)
+#### 🎛️ **Core Components** (`apps/web/src/components/`)
 
-#### 🔧 Backend Files (`apps/server/`)
-- **`src/index.js`** - Express.js server containing:
-  - HTTP server setup
-  - Socket.IO WebSocket handling
-  - MongoDB connection (optional)
-  - API routes for sessions and preferences
-  - CORS configuration
-- **`package.json`** - Backend dependencies (Express, Socket.IO, Mongoose)
-- **`.env`** - Backend environment variables (database connections)
+**🎨 `Map.jsx`** - FRONTEND Main Orchestrator (180 lines)
+- Coordinates all other components
+- Manages Google Maps API loading
+- Handles data flow between components
+- Integrates all hooks and manages application state
 
-#### 📁 Root Files
-- **`package.json`** - Workspace configuration (manages both apps)
-- **`package-lock.json`** - Dependency versions for entire project
-- **`.gitignore`** - Prevents sensitive files from being committed
-- **`README.md`** - Documentation (this file)
+**🎨 `LobbyManager.jsx`** - FRONTEND Session Management
+- Session ID input and joining interface
+- Connection status display
+- Collaboration setup UI
+
+**🎨 `PreferencesPanel.jsx`** - FRONTEND Food Preferences UI
+- Cuisine selection checkboxes (Pizza, Sushi, etc.)
+- Price range dropdown ($, $$, $$$, $$$$)
+- "Open now" toggle
+- Peer preferences display
+
+**🎨 `LocationControls.jsx`** - FRONTEND Route Planning
+- Origin/destination autocomplete inputs
+- Action buttons (Route, Share Start, Clear, Find Restaurants)
+- Google Places integration
+
+**🎨 `MapView.jsx`** - FRONTEND Pure Map Display
+- Google Maps rendering and interaction
+- Dual route display (user + peer routes)
+- Restaurant markers with info windows
+- Map centering and zoom control
+
+**🎨 `RestaurantList.jsx`** - FRONTEND Results Display
+- Formatted restaurant list with ratings
+- Distance calculations to both users
+- Scrollable results area
+
+#### 🔧 **Custom Hooks** (`apps/web/src/hooks/`)
+
+**🎨 `useSession.js`** - FRONTEND Session Management
+- Session joining and ID management
+- BroadcastChannel setup for cross-tab communication
+- localStorage integration for persistence
+- Message broadcasting utilities
+
+**🎨 `usePreferences.js`** - FRONTEND Food Preferences Logic
+- Cuisine selection state management
+- Price range and timing preferences
+- Auto-broadcast changes to other users
+- Preference matching algorithm
+
+**🎨 `useRouting.js`** - FRONTEND Route Management
+- Google Maps Directions API integration
+- Autocomplete place selection handling
+- Route calculation and display
+- Origin location sharing between users
+
+**🎨 `useRestaurants.js`** - FRONTEND Restaurant Discovery
+- Google Places Text Search integration
+- Geocoding and midpoint calculation
+- Haversine distance formula for fairness
+- Results filtering and sorting by preferences
+
+#### 🔧 **Backend Files** (`apps/server/`)
+
+**🔧 `src/index.js`** - BACKEND Express Server
+- HTTP server setup and configuration
+- Socket.IO WebSocket handling for real-time communication
+- MongoDB connection (optional database persistence)
+- API routes for sessions and preferences
+- CORS configuration for cross-origin requests
+
+**🔧 `package.json`** - BACKEND Dependencies
+- Express.js web framework
+- Socket.IO for WebSocket communication
+- Mongoose for MongoDB integration
+- CORS middleware
+- dotenv for environment variables
+
+**🔧 `.env`** - BACKEND Environment Variables
+- `MONGO_URI` - MongoDB connection string (optional)
+- `PORT` - Server port configuration (default: 5000)
+
+#### 📁 **Shared/Root Files**
+
+**📁 `package.json`** - SHARED Root Workspace Configuration
+- npm workspaces setup for `apps/web` and `apps/server`
+- Root-level scripts (`dev:all`, `dev:all:two-web`)
+- Concurrently configuration for running multiple services
+
+**📁 `package-lock.json`** - SHARED Dependency Lock File
+- Exact dependency versions for entire project
+- Ensures consistent installations across environments
+
+**📁 `.gitignore`** - SHARED Git Configuration
+- Prevents sensitive files from being committed (`.env`, `.env.local`)
+- Ignores build artifacts (`node_modules`, `.next`)
+
+**📁 `README.md`** - SHARED Documentation
+- Project documentation and setup instructions
+- Architecture overview and component explanations
 
 ## 📋 Requirements
 
@@ -164,6 +247,46 @@ npm run dev:server   # Backend only
 npm run build:web
 ```
 
+## 🧑‍💻 Development Workflow
+
+### Working with Components
+
+#### Adding New Features
+1. **Create Hook** (`apps/web/src/hooks/useNewFeature.js`)
+   ```javascript
+   export function useNewFeature() {
+     // Business logic here
+     return { state, actions };
+   }
+   ```
+
+2. **Create Component** (`apps/web/src/components/NewFeature.jsx`)
+   ```javascript
+   export default function NewFeature({ onAction }) {
+     // UI logic here
+     return <div>...</div>;
+   }
+   ```
+
+3. **Integrate in Map.jsx**
+   ```javascript
+   import { useNewFeature } from '../hooks/useNewFeature';
+   import NewFeature from './NewFeature';
+   ```
+
+#### Debugging Components
+- **LobbyManager**: Session joining issues → Check `useSession.js`
+- **PreferencesPanel**: Preference sync → Check `usePreferences.js`
+- **LocationControls**: Route calculation → Check `useRouting.js`
+- **RestaurantList**: Search results → Check `useRestaurants.js`
+- **MapView**: Map display → Check Google Maps API integration
+
+#### Testing Individual Components
+```bash
+# Each component can be tested in isolation
+# Create test files in apps/web/src/components/__tests__/
+```
+
 ## 🏗️ Tech Stack
 
 ### Frontend (`apps/web/`)
@@ -183,19 +306,47 @@ npm run build:web
 
 ## 🔧 Architecture
 
-### Data Flow
-1. Users join sessions via session IDs
-2. Preferences stored locally + broadcast via Socket.IO
-3. Start locations geocoded to coordinates
-4. Midpoint calculated between all user locations
-5. Google Places API searches for restaurants
-6. Results filtered by common preferences
-7. Sorted by fairness (sum of distances to all users)
+### Component Architecture Benefits
+
+#### ✅ **Maintainability**
+- **Single Responsibility**: Each component handles one specific feature
+- **Easy Debugging**: Issues can be traced to specific components
+- **Independent Development**: Teams can work on different components simultaneously
+
+#### ✅ **Reusability**
+- **Modular Components**: Can be reused across different pages
+- **Custom Hooks**: Business logic separated and reusable
+- **Clean Interfaces**: Well-defined props and return values
+
+#### ✅ **Performance**
+- **Selective Re-rendering**: Only affected components update
+- **Hook Optimization**: Logic memoized at the hook level
+- **Code Splitting**: Components can be lazy-loaded if needed
+
+#### ✅ **Developer Experience**
+- **Smaller Files**: Easier to navigate and understand (180 lines vs 640)
+- **Clear Structure**: Logical organization of features
+- **Better IDE Support**: Improved autocomplete and error detection
+
+### Data Flow Architecture
+```
+User Action → Component → Hook → localStorage/BroadcastChannel → Other Components
+```
+
+#### Detailed Flow:
+1. **Session Management**: Users join sessions via session IDs
+2. **Preference Sync**: Food preferences stored locally + broadcast via `BroadcastChannel`
+3. **Location Processing**: Start locations geocoded to coordinates
+4. **Midpoint Calculation**: Geographic center calculated between all user locations
+5. **Restaurant Search**: Google Places API searches based on common preferences
+6. **Results Processing**: Results filtered by preferences and sorted by fairness
+7. **Display Updates**: All connected users see synchronized results
 
 ### Real-time Features
-- Cross-tab synchronization via `BroadcastChannel`
-- Multi-user sync via Socket.IO
-- Local persistence via `localStorage`
+- **Cross-tab Sync**: `BroadcastChannel` for same-browser communication
+- **Multi-device Sync**: Socket.IO for different devices/browsers
+- **Data Persistence**: `localStorage` for session continuity
+- **Live Updates**: Real-time preference and location sharing
 
 ## 🚨 Troubleshooting
 
