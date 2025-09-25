@@ -7,11 +7,54 @@ A collaborative food discovery app where people can join lobbies, share food pre
 ```
 FoodieMaps/
 ├── apps/
-│   ├── web/          # Next.js Frontend (React + Tailwind)
-│   └── server/       # Node.js Backend (Express + Socket.IO)
-├── package.json      # Root workspace configuration
-└── README.md
+│   ├── web/                    # 🎨 FRONTEND ONLY
+│   │   ├── .env.local         # Frontend environment variables
+│   │   ├── package.json       # Frontend dependencies
+│   │   ├── next.config.js     # Next.js configuration
+│   │   ├── pages/
+│   │   │   └── index.js       # Main page component
+│   │   └── src/components/
+│   │       └── Map.jsx        # Map component with all UI logic
+│   └── server/                 # 🔧 BACKEND ONLY
+│       ├── .env               # Backend environment variables
+│       ├── package.json       # Backend dependencies
+│       └── src/
+│           └── index.js       # Express server + Socket.IO
+├── package.json               # Root workspace configuration
+├── package-lock.json          # Dependency lock file
+├── .gitignore                 # Git ignore rules
+└── README.md                  # This file
 ```
+
+### File Classification
+
+#### 🎨 Frontend Files (`apps/web/`)
+- **`pages/index.js`** - Main Next.js page that renders the app
+- **`src/components/Map.jsx`** - Core React component containing:
+  - Google Maps integration
+  - User interface (forms, buttons, preferences)
+  - State management (React hooks)
+  - Browser APIs (geolocation, localStorage)
+  - Client-side routing and restaurant search logic
+- **`package.json`** - Frontend dependencies (React, Next.js, Google Maps)
+- **`next.config.js`** - Next.js build configuration
+- **`.env.local`** - Frontend environment variables (API keys)
+
+#### 🔧 Backend Files (`apps/server/`)
+- **`src/index.js`** - Express.js server containing:
+  - HTTP server setup
+  - Socket.IO WebSocket handling
+  - MongoDB connection (optional)
+  - API routes for sessions and preferences
+  - CORS configuration
+- **`package.json`** - Backend dependencies (Express, Socket.IO, Mongoose)
+- **`.env`** - Backend environment variables (database connections)
+
+#### 📁 Root Files
+- **`package.json`** - Workspace configuration (manages both apps)
+- **`package-lock.json`** - Dependency versions for entire project
+- **`.gitignore`** - Prevents sensitive files from being committed
+- **`README.md`** - Documentation (this file)
 
 ## 📋 Requirements
 
