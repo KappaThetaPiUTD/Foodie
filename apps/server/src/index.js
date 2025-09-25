@@ -130,6 +130,27 @@ io.on("connection", (socket) => {
     console.log(`routeClear from ${socket.id} in session ${sessionId}`);
     socket.to(sessionId).emit("routeClear", { from: socket.id });
   });
+
+  // Share user preferences with others
+  socket.on("preferencesUpdate", ({ sessionId, preferences }) => {
+    if (!sessionId || !preferences) return;
+    console.log(`preferencesUpdate from ${socket.id} in session ${sessionId}`);
+    socket.to(sessionId).emit("preferencesUpdate", { preferences, from: socket.id });
+  });
+
+  // Share origin location updates
+  socket.on("originUpdate", ({ sessionId, originText }) => {
+    if (!sessionId || !originText) return;
+    console.log(`originUpdate from ${socket.id} in session ${sessionId}: ${originText}`);
+    socket.to(sessionId).emit("originUpdate", { originText, from: socket.id });
+  });
+
+  // Share restaurant updates
+  socket.on("restaurantsUpdate", ({ sessionId, restaurants }) => {
+    if (!sessionId || !restaurants) return;
+    console.log(`restaurantsUpdate from ${socket.id} in session ${sessionId}: ${restaurants.length} restaurants`);
+    socket.to(sessionId).emit("restaurantsUpdate", { restaurants, from: socket.id });
+  });
 });
 
 // -----------------------------------------------------

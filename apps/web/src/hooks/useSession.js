@@ -63,10 +63,37 @@ export function useSession() {
   }, []);
 
   const broadcastMessage = useCallback((message) => {
+    // Broadcast to same-browser tabs
     if (joined && bcRef.current) {
       bcRef.current.postMessage(message);
     }
-  }, [joined]);
+    
+    // Send to Socket.IO for cross-device sync
+    if (joined && socketRef.current && sessionId) {
+      const socketEvent = {
+        sessionId,
+        ...message.payload
+      };
+      
+      switch (message.type) {
+        case 'routeUpdate':
+          socketRef.current.emit('routeUpdate', socketEvent);
+          break;
+        case 'routeClear':
+          socketRef.current.emit('routeClear', { sessionId });
+          break;
+        case 'preferencesUpdate':
+          socketRef.current.emit('preferencesUpdate', { sessionId, preferences: message.payload });
+          break;
+        case 'restaurantsUpdate':
+          socketRef.current.emit('restaurantsUpdate', { sessionId, restaurants: message.payload });
+          break;
+        case 'originUpdate':
+          socketRef.current.emit('originUpdate', { sessionId, originText: message.payload });
+          break;
+      }
+    }
+  }, [joined, sessionId]);
 
   const saveToSession = useCallback((data) => {
     if (sessionId) {
@@ -79,6 +106,16 @@ export function useSession() {
       }));
     }
   }, [sessionId]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      try {
+        bcRef.current?.close?.();
+        socketRef.current?.disconnect?.();
+      } catch (_) {}
+    };
+  }, []);
 
   return {
     sessionId,
