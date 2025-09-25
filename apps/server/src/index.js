@@ -1,7 +1,7 @@
 /*******************************************************
  * server.js (moved to apps/server/src/index.js)
  *******************************************************/
-require("dotenv").config(); // Loads environment variables from .env
+require("dotenv").config({ path: '../../.env' }); // Loads environment variables from root .env
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -30,10 +30,7 @@ app.use(express.json());
 // -----------------------------------------------------
 const mongoURI = process.env.MONGO_URI;
 if (mongoURI) {
-  mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  mongoose.connect(mongoURI);
   mongoose.connection.on("connected", () => {
     console.log("MongoDB connected:", mongoURI);
   });
@@ -51,34 +48,86 @@ const SessionSchema = new mongoose.Schema({
   sessionId: {
     type: String,
     unique: true,
+    required: true,
   },
   roomCode: {
     type: String,
     unique: true,
+    sparse: true, // Allows null values while keeping uniqueness
   },
-  user1Address: String,
-  user2Address: String,
-  preferences1: {
-    type: mongoose.Schema.Types.Mixed, // allows arbitrary JSON
+  
+  // User data for multiple users
+  users: [{
+    socketId: String,
+    preferences: {
+      cuisines: [String],
+      price: String,
+      openNow: Boolean,
+    },
+    originText: String,
+    originCoordinates: {
+      lat: Number,
+      lng: Number,
+    },
+    lastActive: {
+      type: Date,
+      default: Date.now,
+    }
+  }],
+  
+  // Shared session data
+  restaurants: [{
+    name: String,
+    place_id: String,
+    vicinity: String,
+    geometry: {
+      location: {
+        lat: Number,
+        lng: Number,
+      }
+    },
+    rating: Number,
+    price_level: Number,
+    types: [String],
+  }],
+  
+  // Routes data
+  routes: {
+    user1: mongoose.Schema.Types.Mixed,
+    user2: mongoose.Schema.Types.Mixed,
   },
-  preferences2: {
-    type: mongoose.Schema.Types.Mixed,
-  },
+  
   status: {
     type: String,
-    default: "pending",
+    default: "active",
+    enum: ["active", "completed", "expired"]
   },
+  
+  lastActivity: {
+    type: Date,
+    default: Date.now,
+  },
+  
   createdAt: {
     type: Date,
     default: Date.now,
   },
 
-  // If you plan to store lat/lon after geocoding:
+  // Legacy fields for compatibility
+  user1Address: String,
+  user2Address: String,
+  preferences1: mongoose.Schema.Types.Mixed,
+  preferences2: mongoose.Schema.Types.Mixed,
   user1Lat: Number,
   user1Lon: Number,
   user2Lat: Number,
   user2Lon: Number,
 });
+
+// Add indexes for better performance
+SessionSchema.index({ sessionId: 1 });
+SessionSchema.index({ createdAt: 1 });
+SessionSchema.index({ lastActivity: 1 });
 
 const Session = mongoose.model("Session", SessionSchema);
 
@@ -95,20 +144,53 @@ function generateRoomCode(length = 6) {
 }
 
 // -----------------------------------------------------
-// 5. SOCKET.IO - OPTIONAL REAL-TIME
+// 5. SOCKET.IO - WITH MONGODB PERSISTENCE
 // -----------------------------------------------------
 io.on("connection", (socket) => {
   console.log("New socket.io connection");
 
-  socket.on("joinSession", (sessionId) => {
+  socket.on("joinSession", async (sessionId) => {
     socket.join(sessionId);
     console.log(`Socket joined room: ${sessionId}`);
 
-    // Notify others in the room
-    socket.to(sessionId).emit("userJoined", {
-      sessionId,
-      message: "A new user joined the session",
-    });
+    try {
+      // Find or create session in MongoDB
+      let session = await Session.findOne({ sessionId });
+      
+      if (!session) {
+        session = await Session.create({
+          sessionId,
+          users: [],
+          restaurants: [],
+          routes: {},
+          status: "active",
+        });
+        console.log(`Created new session: ${sessionId}`);
+      } else {
+        // Update last activity
+        session.lastActivity = new Date();
+        await session.save();
+        console.log(`Found existing session: ${sessionId}`);
+      }
+
+      // Send existing session data to the new user
+      socket.emit("sessionData", {
+        sessionId: session.sessionId,
+        users: session.users,
+        restaurants: session.restaurants,
+        routes: session.routes,
+      });
+
+      // Notify others in the room
+      socket.to(sessionId).emit("userJoined", {
+        sessionId,
+        message: "A new user joined the session",
+      });
+
+    } catch (error) {
+      console.error("Error joining session:", error);
+      socket.emit("error", { message: "Failed to join session" });
+    }
   });
 
   socket.on("disconnect", () => {
@@ -131,25 +213,92 @@ io.on("connection", (socket) => {
     socket.to(sessionId).emit("routeClear", { from: socket.id });
   });
 
-  // Share user preferences with others
-  socket.on("preferencesUpdate", ({ sessionId, preferences }) => {
+  // Share user preferences with others and save to MongoDB
+  socket.on("preferencesUpdate", async ({ sessionId, preferences }) => {
     if (!sessionId || !preferences) return;
     console.log(`preferencesUpdate from ${socket.id} in session ${sessionId}`);
-    socket.to(sessionId).emit("preferencesUpdate", { preferences, from: socket.id });
+    
+    try {
+      // Update session in MongoDB
+      const session = await Session.findOne({ sessionId });
+      if (session) {
+        // Find or create user in session
+        let user = session.users.find(u => u.socketId === socket.id);
+        if (!user) {
+          user = { socketId: socket.id, preferences: {}, lastActive: new Date() };
+          session.users.push(user);
+        }
+        
+        // Update preferences
+        user.preferences = preferences;
+        user.lastActive = new Date();
+        session.lastActivity = new Date();
+        
+        await session.save();
+        console.log(`Saved preferences for user ${socket.id} in session ${sessionId}`);
+      }
+      
+      // Broadcast to other clients
+      socket.to(sessionId).emit("preferencesUpdate", { preferences, from: socket.id });
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+    }
   });
 
-  // Share origin location updates
-  socket.on("originUpdate", ({ sessionId, originText }) => {
+  // Share origin location updates and save to MongoDB
+  socket.on("originUpdate", async ({ sessionId, originText }) => {
     if (!sessionId || !originText) return;
     console.log(`originUpdate from ${socket.id} in session ${sessionId}: ${originText}`);
-    socket.to(sessionId).emit("originUpdate", { originText, from: socket.id });
+    
+    try {
+      // Update session in MongoDB
+      const session = await Session.findOne({ sessionId });
+      if (session) {
+        // Find or create user in session
+        let user = session.users.find(u => u.socketId === socket.id);
+        if (!user) {
+          user = { socketId: socket.id, preferences: {}, lastActive: new Date() };
+          session.users.push(user);
+        }
+        
+        // Update origin text
+        user.originText = originText;
+        user.lastActive = new Date();
+        session.lastActivity = new Date();
+        
+        await session.save();
+        console.log(`Saved origin for user ${socket.id} in session ${sessionId}`);
+      }
+      
+      // Broadcast to other clients
+      socket.to(sessionId).emit("originUpdate", { originText, from: socket.id });
+    } catch (error) {
+      console.error("Error saving origin:", error);
+    }
   });
 
-  // Share restaurant updates
-  socket.on("restaurantsUpdate", ({ sessionId, restaurants }) => {
+  // Share restaurant updates and save to MongoDB
+  socket.on("restaurantsUpdate", async ({ sessionId, restaurants }) => {
     if (!sessionId || !restaurants) return;
     console.log(`restaurantsUpdate from ${socket.id} in session ${sessionId}: ${restaurants.length} restaurants`);
-    socket.to(sessionId).emit("restaurantsUpdate", { restaurants, from: socket.id });
+    
+    try {
+      // Update session in MongoDB
+      const session = await Session.findOne({ sessionId });
+      if (session) {
+        // Save restaurants to session
+        session.restaurants = restaurants;
+        session.lastActivity = new Date();
+        
+        await session.save();
+        console.log(`Saved ${restaurants.length} restaurants in session ${sessionId}`);
+      }
+      
+      // Broadcast to other clients
+      socket.to(sessionId).emit("restaurantsUpdate", { restaurants, from: socket.id });
+    } catch (error) {
+      console.error("Error saving restaurants:", error);
+    }
   });
 });
 
@@ -223,7 +372,19 @@ app.get("/session/:sessionId", async (req, res) => {
       return res.status(404).json({ error: "Session not found" });
     }
 
-    return res.json(session);
+    // Update last activity
+    session.lastActivity = new Date();
+    await session.save();
+
+    return res.json({
+      sessionId: session.sessionId,
+      users: session.users,
+      restaurants: session.restaurants,
+      routes: session.routes,
+      status: session.status,
+      createdAt: session.createdAt,
+      lastActivity: session.lastActivity,
+    });
   } catch (err) {
     console.error("Error fetching session:", err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -370,6 +531,39 @@ app.get("/session/:sessionId/recommendations", async (req, res) => {
   } catch (err) {
     console.error("Error fetching recommendations:", err);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Add a test endpoint to check MongoDB connection
+app.get("/test-db", async (req, res) => {
+  try {
+    if (!mongoose.connection.readyState) {
+      return res.status(500).json({ 
+        error: "MongoDB not connected", 
+        readyState: mongoose.connection.readyState 
+      });
+    }
+    
+    // Try to create a test session
+    const testSession = await Session.create({
+      sessionId: `test-${Date.now()}`,
+      users: [],
+      restaurants: [],
+      routes: {},
+      status: "active",
+    });
+    
+    res.json({ 
+      success: true, 
+      message: "MongoDB is working!", 
+      testSessionId: testSession.sessionId,
+      connectionState: mongoose.connection.readyState 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: "Database test failed", 
+      details: error.message 
+    });
   }
 });
 

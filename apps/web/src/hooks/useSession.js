@@ -44,6 +44,28 @@ export function useSession() {
       socketRef.current.on('originUpdate', (data) => {
         onMessage({ data: { type: 'originUpdate', payload: data.originText } });
       });
+
+      // Handle session data from server (for recovery)
+      socketRef.current.on('sessionData', (data) => {
+        console.log('Received session data from server:', data);
+        // Restore session data from MongoDB
+        if (data.restaurants && data.restaurants.length > 0) {
+          onMessage({ data: { type: 'restaurantsUpdate', payload: data.restaurants } });
+        }
+        if (data.users && data.users.length > 0) {
+          // Find other users' data
+          data.users.forEach(user => {
+            if (user.socketId !== socketRef.current.id) {
+              if (user.preferences) {
+                onMessage({ data: { type: 'preferencesUpdate', payload: user.preferences } });
+              }
+              if (user.originText) {
+                onMessage({ data: { type: 'originUpdate', payload: user.originText } });
+              }
+            }
+          });
+        }
+      });
     }
     
     // Close existing broadcast channel
