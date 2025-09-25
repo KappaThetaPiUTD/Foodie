@@ -1,10 +1,12 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { io } from 'socket.io-client';
 
 export function useSession() {
   const [sessionId, setSessionId] = useState('');
   const [joined, setJoined] = useState(false);
   const bcRef = useRef(null);
   const sessionInputRef = useRef(null);
+  const socketRef = useRef(null);
 
   const joinSession = useCallback((onMessage) => {
     const id = sessionInputRef.current?.value?.trim();
@@ -13,12 +15,43 @@ export function useSession() {
     setSessionId(id);
     setJoined(true);
     
+    // Connect to Socket.IO server for cross-device sync
+    if (!socketRef.current) {
+      socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000');
+      
+      socketRef.current.on('connect', () => {
+        console.log('Connected to server');
+        socketRef.current.emit('joinSession', id);
+      });
+
+      // Set up Socket.IO message handlers
+      socketRef.current.on('routeUpdate', (data) => {
+        onMessage({ data: { type: 'routeUpdate', payload: data } });
+      });
+
+      socketRef.current.on('routeClear', (data) => {
+        onMessage({ data: { type: 'routeClear', payload: data } });
+      });
+
+      socketRef.current.on('preferencesUpdate', (data) => {
+        onMessage({ data: { type: 'preferencesUpdate', payload: data.preferences } });
+      });
+
+      socketRef.current.on('restaurantsUpdate', (data) => {
+        onMessage({ data: { type: 'restaurantsUpdate', payload: data.restaurants } });
+      });
+
+      socketRef.current.on('originUpdate', (data) => {
+        onMessage({ data: { type: 'originUpdate', payload: data.originText } });
+      });
+    }
+    
     // Close existing broadcast channel
     try { 
       bcRef.current?.close?.(); 
     } catch (_) {}
     
-    // Create new broadcast channel
+    // Create new broadcast channel for same-browser tabs
     bcRef.current = new BroadcastChannel(`foodie-${id}`);
     bcRef.current.onmessage = onMessage;
 
