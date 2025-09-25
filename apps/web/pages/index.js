@@ -1,60 +1,53 @@
-import dynamic from 'next/dynamic';
-
-const Map = dynamic(() => import('../src/components/Map'), { ssr: false });
+import { useRouter } from 'next/router';
+import { useAuth } from '../src/context/AuthContext';
+import { useEffect } from 'react';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { currentUser } = useAuth();
+
+  // Redirect based on auth status
+  useEffect(() => {
+    if (currentUser) {
+      router.push('/maps');
+    } else {
+      router.push('/landing');
+    }
+  }, [currentUser, router]);
+
+  // Show loading while redirecting
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px'
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     }}>
-      {/* Header */}
       <div style={{
+        backgroundColor: 'white',
+        padding: '40px',
+        borderRadius: '16px',
         textAlign: 'center',
-        marginBottom: '24px'
+        boxShadow: '0 20px 60px rgba(0,0,0,0.15)'
       }}>
-        <h1 style={{
-          fontSize: '32px',
-          fontWeight: '700',
-          color: 'white',
-          marginBottom: '8px',
-          textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          🍽️ FoodieMaps
-        </h1>
-        <p style={{
-          fontSize: '16px',
-          color: 'rgba(255,255,255,0.9)',
-          maxWidth: '600px',
-          margin: '0 auto',
-          lineHeight: '1.6'
-        }}>
-          Discover restaurants together! Join the same session with friends to share preferences and find the perfect dining spot.
-        </p>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #667eea',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 20px'
+        }}></div>
+        <p style={{ color: '#666', fontSize: '1rem' }}>Loading FoodieMaps...</p>
       </div>
-
-      {/* Main Content */}
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto'
-      }}>
-        <Map />
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        textAlign: 'center',
-        marginTop: '32px',
-        padding: '20px'
-      }}>
-        <p style={{
-          fontSize: '14px',
-          color: 'rgba(255,255,255,0.7)'
-        }}>
-          Powered by Google Maps & Places API • Built with React & Next.js
-        </p>
-      </div>
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
