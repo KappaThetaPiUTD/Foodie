@@ -23,13 +23,13 @@ NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 MONGO_URI=mongodb+srv://...
 ```
 
-## Run (same behavior as before)
+## Run (recommended local workflow)
 
-Single web + server (recommended):
+Single web + server (use two tabs at same origin):
 ```
 npm run dev:all
 ```
-- Frontend: http://localhost:3001
+- Frontend (open two tabs): http://localhost:3001
 - Backend: http://localhost:5000
 
 Two web instances (simulate two users on same machine):

@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev:web": "npm --workspace apps/web run dev",
-    "dev:web:3002": "PORT=3002 npm --workspace apps/web run dev",
+    "dev:web:3002": "PORT=3002 next dev -p 3002 -p 3002",
     "build:web": "npm --workspace apps/web run build",
     "start:web": "npm --workspace apps/web run start",
     "dev:server": "npm --workspace apps/server run dev",
