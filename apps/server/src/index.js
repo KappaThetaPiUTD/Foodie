@@ -58,7 +58,125 @@ if (mongoURI) {
 }
 
 // -----------------------------------------------------
-// 3. DEFINE SESSION SCHEMA & MODEL
+// 3. DEFINE USER SCHEMA & MODEL
+// -----------------------------------------------------
+const UserSchema = new mongoose.Schema({
+  firebaseUid: {
+    type: String,
+    unique: true,
+    required: true,
+    index: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  },
+  displayName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  profilePicture: {
+    type: String,
+    default: null,
+  },
+  
+  // Default preferences (persistent across sessions)
+  defaultPreferences: {
+    cuisines: {
+      type: [String],
+      default: []
+    },
+    priceRange: {
+      type: String,
+      enum: ['$', '$$', '$$$', '$$$$'],
+      default: '$$',
+    },
+    dietaryRestrictions: {
+      type: [String],
+      default: []
+    },
+    openNow: {
+      type: Boolean,
+      default: true
+    }
+  },
+  
+  // Saved locations for quick access
+  savedLocations: [{
+    name: {
+      type: String,
+      required: true
+    },
+    address: {
+      type: String,
+      required: true
+    },
+    coordinates: {
+      lat: Number,
+      lng: Number
+    }
+  }],
+  
+  // User statistics
+  stats: {
+    sessionsJoined: {
+      type: Number,
+      default: 0
+    },
+    restaurantsDiscovered: {
+      type: Number,
+      default: 0
+    },
+    totalSearches: {
+      type: Number,
+      default: 0
+    }
+  },
+  
+  // Favorite restaurants
+  favoriteRestaurants: [{
+    placeId: String,
+    name: String,
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  // Account settings
+  settings: {
+    notifications: {
+      type: Boolean,
+      default: true
+    },
+    publicProfile: {
+      type: Boolean,
+      default: false
+    }
+  },
+  
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  lastActive: {
+    type: Date,
+    default: Date.now,
+  }
+});
+
+const User = mongoose.model("User", UserSchema);
+
+// -----------------------------------------------------
+// 4. DEFINE SESSION SCHEMA & MODEL (Enhanced)
 // -----------------------------------------------------
 const SessionSchema = new mongoose.Schema({
   sessionId: {
@@ -72,10 +190,13 @@ const SessionSchema = new mongoose.Schema({
     sparse: true, // Allows null values while keeping uniqueness
   },
   
-  // User data for multiple users
+  // Enhanced user data with Firebase UID reference
   users: [{
     socketId: String,
-    preferences: {
+    firebaseUid: String, // Link to User document
+    
+    // Session-specific preferences (can override user defaults)
+    sessionPreferences: {
       cuisines: [String],
       price: String,
       openNow: Boolean,
@@ -189,12 +310,17 @@ io.on("connection", (socket) => {
         console.log(`Found existing session: ${sessionId}`);
       }
 
+      // If user info provided in the future, try to load their default preferences
+      let defaultPreferences = null;
+      // Note: This will be enhanced when frontend sends user info
+      
       // Send existing session data to the new user
       socket.emit("sessionData", {
         sessionId: session.sessionId,
         users: session.users,
         restaurants: session.restaurants,
         routes: session.routes,
+        defaultPreferences, // Will be populated when user info is sent
       });
 
       // Notify others in the room
@@ -373,6 +499,123 @@ app.post("/session/join-room-code", async (req, res) => {
   } catch (err) {
     console.error("Error joining session:", err);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// -----------------------------------------------------
+// USER API ROUTES
+// -----------------------------------------------------
+
+// Create or update user profile
+app.post("/user/profile", async (req, res) => {
+  try {
+    const { firebaseUid, email, displayName, defaultPreferences, savedLocations } = req.body;
+    
+    if (!firebaseUid || !email || !displayName) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    let user = await User.findOne({ firebaseUid });
+    
+    if (user) {
+      // Update existing user
+      user.email = email;
+      user.displayName = displayName;
+      user.lastActive = new Date();
+      
+      if (defaultPreferences) {
+        user.defaultPreferences = { ...user.defaultPreferences, ...defaultPreferences };
+      }
+      
+      if (savedLocations) {
+        user.savedLocations = savedLocations;
+      }
+      
+      await user.save();
+      console.log(`Updated user profile: ${firebaseUid}`);
+    } else {
+      // Create new user
+      user = await User.create({
+        firebaseUid,
+        email,
+        displayName,
+        defaultPreferences: defaultPreferences || {},
+        savedLocations: savedLocations || []
+      });
+      console.log(`Created new user: ${firebaseUid}`);
+    }
+
+    res.json({
+      success: true,
+      user: {
+        firebaseUid: user.firebaseUid,
+        email: user.email,
+        displayName: user.displayName,
+        defaultPreferences: user.defaultPreferences,
+        savedLocations: user.savedLocations,
+        stats: user.stats
+      }
+    });
+  } catch (error) {
+    console.error("Error managing user profile:", error);
+    res.status(500).json({ error: "Failed to manage user profile" });
+  }
+});
+
+// Get user profile
+app.get("/user/profile/:firebaseUid", async (req, res) => {
+  try {
+    const { firebaseUid } = req.params;
+    
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update last active
+    user.lastActive = new Date();
+    await user.save();
+
+    res.json({
+      user: {
+        firebaseUid: user.firebaseUid,
+        email: user.email,
+        displayName: user.displayName,
+        defaultPreferences: user.defaultPreferences,
+        savedLocations: user.savedLocations,
+        favoriteRestaurants: user.favoriteRestaurants,
+        stats: user.stats,
+        settings: user.settings
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+});
+
+// Update user preferences
+app.put("/user/preferences/:firebaseUid", async (req, res) => {
+  try {
+    const { firebaseUid } = req.params;
+    const { defaultPreferences } = req.body;
+    
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    user.defaultPreferences = { ...user.defaultPreferences, ...defaultPreferences };
+    user.lastActive = new Date();
+    await user.save();
+
+    res.json({
+      success: true,
+      defaultPreferences: user.defaultPreferences
+    });
+  } catch (error) {
+    console.error("Error updating user preferences:", error);
+    res.status(500).json({ error: "Failed to update preferences" });
   }
 });
 
