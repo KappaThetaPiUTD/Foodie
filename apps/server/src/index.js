@@ -11,18 +11,34 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const axios = require("axios");
 
+// Load production config if in production
+const prodConfig = process.env.NODE_ENV === 'production' 
+  ? require('../config/production') 
+  : null;
+
 // -----------------------------------------------------
 // 1. EXPRESS & SOCKET.IO SETUP
 // -----------------------------------------------------
 const app = express();
 const server = http.createServer(app);
+
+// Configure CORS based on environment
+const corsOptions = prodConfig ? {
+  origin: prodConfig.corsOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+} : {
+  origin: "*", // Allow all origins in development
+};
+
 const io = socketIo(server, {
-  cors: {
-    origin: "*", // adjust for your frontend in production
+  cors: prodConfig ? prodConfig.socketSettings.cors : {
+    origin: "*", // Allow all origins in development
   },
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // -----------------------------------------------------

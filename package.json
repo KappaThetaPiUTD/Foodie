@@ -15,6 +15,11 @@
     "start:server": "npm --workspace apps/server run start",
     "dev:all": "concurrently \"npm run dev:server\" \"npm run dev:web\"",
     "dev:all:two-web": "concurrently \"npm run dev:server\" \"npm run dev:web\" \"npm run dev:web:3002\"",
+    "build": "npm run build:web && npm run build:server",
+    "build:server": "npm --workspace apps/server run build",
+    "start:prod": "concurrently \"npm run start:server\" \"npm run start:web\"",
+    "install:all": "npm install && npm --workspace apps/web install && npm --workspace apps/server install",
+    "clean": "rm -rf node_modules apps/*/node_modules apps/*/.next apps/*/dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
