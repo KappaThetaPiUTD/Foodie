@@ -6,7 +6,7 @@
 
 ```bash
 # Copy your existing .env.local to .env.production and update:
-NEXT_PUBLIC_SOCKET_URL=https://your-backend-domain.com
+NEXT_PUBLIC_SOCKET_URL=https://your-backend-domain.up.railway.app
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyCXBFnwrhM--SXqabtELIgzdtTJNW8KBfo
 ```
 
