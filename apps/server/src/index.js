@@ -1,7 +1,7 @@
 /*******************************************************
  * server.js (moved to apps/server/src/index.js)
  *******************************************************/
-require("dotenv").config({ path: '../../.env' }); // Loads environment variables from root .env
+require("dotenv").config(); // Railway provides environment variables automatically
 
 const express = require("express");
 const mongoose = require("mongoose");
