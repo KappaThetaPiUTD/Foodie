@@ -10,17 +10,21 @@ module.exports = {
   // CORS settings for production
   corsOrigins: [
     // Add your production frontend URLs here
-    'https://your-frontend-domain.com',
-    'https://www.your-frontend-domain.com',
-    // Remove localhost in production for security
+    'https://your-vercel-app.vercel.app',
+    'https://www.your-custom-domain.com', // if you add a custom domain later
+    // Add localhost for development/testing
+    'http://localhost:3001',
+    'http://localhost:3002',
   ],
   
   // Socket.IO settings
   socketSettings: {
     cors: {
       origin: [
-        'https://your-frontend-domain.com',
-        'https://www.your-frontend-domain.com',
+        'https://your-vercel-app.vercel.app',
+        'https://www.your-custom-domain.com', // if you add a custom domain later
+        'http://localhost:3001',
+        'http://localhost:3002',
       ],
       methods: ["GET", "POST"],
       credentials: true
