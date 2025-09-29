@@ -49,6 +49,58 @@ const io = socketIo(server, {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Health check endpoint for testing
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    mongodb: mongoURI ? "configured" : "not configured",
+    mongoConnected: mongoose.connection.readyState === 1,
+    features: {
+      userManagement: "implemented",
+      sessionManagement: "pending",
+      smartPreferences: "pending"
+    }
+  });
+});
+
+// Test endpoint for API structure (works without MongoDB)
+app.post("/test/user/location", (req, res) => {
+  const { firebaseUid, lat, lng, address } = req.body;
+  
+  if (!firebaseUid || !lat || !lng || !address) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  
+  // Simulate successful response
+  res.json({
+    success: true,
+    message: "API structure test successful",
+    data: {
+      firebaseUid,
+      startLocation: { lat, lng, address, updatedAt: new Date() }
+    }
+  });
+});
+
+app.put("/test/user/preferences", (req, res) => {
+  const { firebaseUid, cuisines, priceRange, openNow } = req.body;
+  
+  if (!firebaseUid) {
+    return res.status(400).json({ error: "Missing firebaseUid" });
+  }
+  
+  // Simulate successful response
+  res.json({
+    success: true,
+    message: "API structure test successful",
+    data: {
+      firebaseUid,
+      preferences: { cuisines, priceRange, openNow, updatedAt: new Date() }
+    }
+  });
+});
+
 // -----------------------------------------------------
 // 2. CONNECT TO MONGODB (MONGOOSE)
 // -----------------------------------------------------
@@ -985,6 +1037,241 @@ app.get("/test-db", async (req, res) => {
       details: error.message 
     });
   }
+});
+
+// -----------------------------------------------------
+// NEW SESSION MANAGEMENT FOR REQUIREMENTS
+// -----------------------------------------------------
+
+// Join a session (enforces one session per user)
+app.post("/session/join", async (req, res) => {
+  try {
+    const { firebaseUid, sessionId, startLocation } = req.body;
+    
+    if (!firebaseUid || !sessionId) {
+      return res.status(400).json({ error: "Missing firebaseUid or sessionId" });
+    }
+
+    // Find the user
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Remove user from any existing session (one session per user rule)
+    if (user.currentSessionCode) {
+      await Session.updateOne(
+        { sessionId: user.currentSessionCode },
+        { $pull: { users: { firebaseUid } } }
+      );
+      console.log(`Removed user ${firebaseUid} from previous session: ${user.currentSessionCode}`);
+    }
+
+    // Find or create the target session
+    let session = await Session.findOne({ sessionId });
+    if (!session) {
+      session = await Session.create({
+        sessionId,
+        users: [],
+        restaurantResults: { data: [], cachedAt: new Date(), expiresAt: new Date(Date.now() + 30 * 60 * 1000) },
+        status: "active",
+        lastActivity: new Date(),
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      });
+      console.log(`Created new session: ${sessionId}`);
+    }
+
+    // Add user to the new session
+    const userSessionData = {
+      firebaseUid,
+      sessionPreferences: {
+        cuisines: user.defaultPreferences.cuisines,
+        price: user.defaultPreferences.priceRange,
+        openNow: user.defaultPreferences.openNow,
+      },
+      lastActive: new Date()
+    };
+
+    // Add start location if provided, or use user's saved location
+    if (startLocation) {
+      userSessionData.originText = startLocation.address;
+      userSessionData.originCoordinates = {
+        lat: startLocation.lat,
+        lng: startLocation.lng
+      };
+    } else if (user.startLocation) {
+      userSessionData.originText = user.startLocation.address;
+      userSessionData.originCoordinates = {
+        lat: user.startLocation.lat,
+        lng: user.startLocation.lng
+      };
+    }
+
+    // Remove user if already in session (prevent duplicates)
+    session.users = session.users.filter(u => u.firebaseUid !== firebaseUid);
+    session.users.push(userSessionData);
+    session.lastActivity = new Date();
+    await session.save();
+
+    // Update user's current session
+    user.currentSessionCode = sessionId;
+    user.lastActive = new Date();
+    await user.save();
+
+    console.log(`User ${firebaseUid} joined session: ${sessionId}`);
+
+    res.json({
+      success: true,
+      session: {
+        sessionId: session.sessionId,
+        users: session.users,
+        userCount: session.users.length,
+        createdAt: session.createdAt,
+        lastActivity: session.lastActivity
+      }
+    });
+  } catch (error) {
+    console.error("Error joining session:", error);
+    res.status(500).json({ error: "Failed to join session" });
+  }
+});
+
+// Leave current session
+app.post("/session/leave", async (req, res) => {
+  try {
+    const { firebaseUid } = req.body;
+    
+    if (!firebaseUid) {
+      return res.status(400).json({ error: "Missing firebaseUid" });
+    }
+
+    const user = await User.findOne({ firebaseUid });
+    if (!user || !user.currentSessionCode) {
+      return res.json({ success: true, message: "User not in any session" });
+    }
+
+    // Remove user from session
+    const session = await Session.findOne({ sessionId: user.currentSessionCode });
+    if (session) {
+      session.users = session.users.filter(u => u.firebaseUid !== firebaseUid);
+      session.lastActivity = new Date();
+      await session.save();
+      
+      // Delete session if no users left
+      if (session.users.length === 0) {
+        await Session.deleteOne({ sessionId: user.currentSessionCode });
+        console.log(`Deleted empty session: ${user.currentSessionCode}`);
+      }
+    }
+
+    // Clear user's current session
+    user.currentSessionCode = null;
+    user.lastActive = new Date();
+    await user.save();
+
+    console.log(`User ${firebaseUid} left session`);
+
+    res.json({ success: true, message: "Left session successfully" });
+  } catch (error) {
+    console.error("Error leaving session:", error);
+    res.status(500).json({ error: "Failed to leave session" });
+  }
+});
+
+// Get all users in a session
+app.get("/session/:sessionId/users", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    const session = await Session.findOne({ sessionId });
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    // Get detailed user information
+    const userDetails = await Promise.all(
+      session.users.map(async (sessionUser) => {
+        const user = await User.findOne({ firebaseUid: sessionUser.firebaseUid });
+        return {
+          firebaseUid: sessionUser.firebaseUid,
+          displayName: user ? user.displayName : "Unknown User",
+          email: user ? user.email : null,
+          startLocation: sessionUser.originCoordinates ? {
+            lat: sessionUser.originCoordinates.lat,
+            lng: sessionUser.originCoordinates.lng,
+            address: sessionUser.originText
+          } : null,
+          preferences: sessionUser.sessionPreferences,
+          lastActive: sessionUser.lastActive
+        };
+      })
+    );
+
+    res.json({
+      sessionId: session.sessionId,
+      users: userDetails,
+      userCount: userDetails.length,
+      createdAt: session.createdAt,
+      lastActivity: session.lastActivity
+    });
+  } catch (error) {
+    console.error("Error getting session users:", error);
+    res.status(500).json({ error: "Failed to get session users" });
+  }
+});
+
+// Cleanup expired sessions
+app.delete("/session/cleanup", async (req, res) => {
+  try {
+    const now = new Date();
+    
+    // Find expired sessions
+    const expiredSessions = await Session.find({ expiresAt: { $lt: now } });
+    
+    // Clear users' currentSessionCode for expired sessions
+    for (const session of expiredSessions) {
+      await User.updateMany(
+        { currentSessionCode: session.sessionId },
+        { $unset: { currentSessionCode: 1 } }
+      );
+    }
+    
+    // Delete expired sessions
+    const result = await Session.deleteMany({ expiresAt: { $lt: now } });
+    
+    console.log(`Cleaned up ${result.deletedCount} expired sessions`);
+    
+    res.json({
+      success: true,
+      deletedSessions: result.deletedCount,
+      cleanupTime: now
+    });
+  } catch (error) {
+    console.error("Error cleaning up sessions:", error);
+    res.status(500).json({ error: "Failed to cleanup sessions" });
+  }
+});
+
+// Test endpoint for session management (works without complex setup)
+app.post("/test/session/join", (req, res) => {
+  const { firebaseUid, sessionId, startLocation } = req.body;
+  
+  if (!firebaseUid || !sessionId) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+  
+  res.json({
+    success: true,
+    message: "Session join API structure test successful",
+    data: {
+      firebaseUid,
+      sessionId,
+      startLocation,
+      joinedAt: new Date(),
+      userCount: 1
+    }
+  });
 });
 
 // -----------------------------------------------------
