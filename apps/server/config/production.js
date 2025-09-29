@@ -10,7 +10,7 @@ module.exports = {
   // CORS settings for production
   corsOrigins: [
     // Add your production frontend URLs here
-    'https://YOUR-ACTUAL-VERCEL-URL.vercel.app',
+    'https://foodiemaps.vercel.app',
     'https://www.your-custom-domain.com', // if you add a custom domain later
     // Add localhost for development/testing
     'http://localhost:3001',
@@ -21,7 +21,7 @@ module.exports = {
   socketSettings: {
     cors: {
       origin: [
-        'https://YOUR-ACTUAL-VERCEL-URL.vercel.app',
+        'https://foodiemaps.vercel.app',
         'https://www.your-custom-domain.com', // if you add a custom domain later
         'http://localhost:3001',
         'http://localhost:3002',
