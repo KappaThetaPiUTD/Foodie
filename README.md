@@ -306,22 +306,7 @@ npm run install:all
    NODE_ENV=production
    ```
 
-3. **Update Production Config**:
-   - Edit `apps/server/config/production.js`
-   - Replace placeholder URLs with your actual domains
 
-### Hosting Recommendations
-- **Frontend**: Vercel or Netlify (connects to GitHub)
-- **Backend**: Railway, Render, or Heroku
-- **Database**: MongoDB Atlas (already configured)
-
-### Pre-deployment Checklist
-- [ ] Update Google API Console with production domains
-- [ ] Update Firebase Console with production domains  
-- [ ] Set environment variables in hosting platforms
-- [ ] Update CORS origins in production config
-- [ ] Test authentication flow
-- [ ] Verify real-time sync across devices
 
 See `DEPLOYMENT.md` for detailed deployment instructions.
 
@@ -384,29 +369,9 @@ See `DEPLOYMENT.md` for detailed deployment instructions.
 - **CORS** - Cross-origin requests
 - **dotenv** - Environment variables
 
-## Architecture
 
-### Component Architecture Benefits
 
-#### Maintainability
-- **Single Responsibility**: Each component handles one specific feature
-- **Easy Debugging**: Issues can be traced to specific components
-- **Independent Development**: Teams can work on different components simultaneously
 
-#### Reusability
-- **Modular Components**: Can be reused across different pages
-- **Custom Hooks**: Business logic separated and reusable
-- **Clean Interfaces**: Well-defined props and return values
-
-#### Performance
-- **Selective Re-rendering**: Only affected components update
-- **Hook Optimization**: Logic memoized at the hook level
-- **Code Splitting**: Components can be lazy-loaded if needed
-
-#### Developer Experience
-- **Smaller Files**: Easier to navigate and understand (180 lines vs 640)
-- **Clear Structure**: Logical organization of features
-- **Better IDE Support**: Improved autocomplete and error detection
 
 ### Data Flow Architecture
 ```
