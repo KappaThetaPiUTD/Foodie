@@ -1,7 +1,15 @@
 /*******************************************************
  * server.js (moved to apps/server/src/index.js)
  *******************************************************/
-require("dotenv").config(); // Railway provides environment variables automatically
+// Railway provides environment variables automatically, but load dotenv as fallback
+require("dotenv").config({ path: ['.env', '../.env', '../../.env'] });
+
+// Debug: Log environment variables (remove in production)
+console.log('Environment check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('MONGO_URI exists:', !!process.env.MONGO_URI);
+console.log('MONGO_URI length:', process.env.MONGO_URI ? process.env.MONGO_URI.length : 0);
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -84,6 +92,17 @@ const UserSchema = new mongoose.Schema({
     default: null,
   },
   
+  // Persistent start location (new requirement)
+  startLocation: {
+    lat: Number,
+    lng: Number,
+    address: String,
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  
   // Default preferences (persistent across sessions)
   defaultPreferences: {
     cuisines: {
@@ -102,7 +121,17 @@ const UserSchema = new mongoose.Schema({
     openNow: {
       type: Boolean,
       default: true
-    }
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  
+  // Current session - only one session at a time (new requirement)
+  currentSessionCode: {
+    type: String,
+    default: null,
   },
   
   // Saved locations for quick access
@@ -212,21 +241,35 @@ const SessionSchema = new mongoose.Schema({
     }
   }],
   
-  // Shared session data
-  restaurants: [{
-    name: String,
-    place_id: String,
-    vicinity: String,
-    geometry: {
-      location: {
-        lat: Number,
-        lng: Number,
-      }
+  // Cached restaurant results (new requirement)
+  restaurantResults: {
+    data: [{
+      name: String,
+      place_id: String,
+      vicinity: String,
+      geometry: {
+        location: {
+          lat: Number,
+          lng: Number,
+        }
+      },
+      rating: Number,
+      price_level: Number,
+      types: [String],
+      // Additional fields for smart matching
+      matchedCuisines: [String], // Which user cuisines this restaurant matches
+      userCount: Number, // How many users' preferences this satisfies
+    }],
+    cachedAt: {
+      type: Date,
+      default: Date.now,
     },
-    rating: Number,
-    price_level: Number,
-    types: [String],
-  }],
+    // Cache expires after 30 minutes
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 30 * 60 * 1000), // 30 minutes from now
+    },
+  },
   
   // Routes data
   routes: {
@@ -249,6 +292,12 @@ const SessionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  
+  // Auto-expire sessions after 24 hours (new requirement)
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+  },
 
   // Legacy fields for compatibility
   user1Address: String,
@@ -265,6 +314,8 @@ const SessionSchema = new mongoose.Schema({
 SessionSchema.index({ sessionId: 1 });
 SessionSchema.index({ createdAt: 1 });
 SessionSchema.index({ lastActivity: 1 });
+SessionSchema.index({ expiresAt: 1 }); // For auto-cleanup
+SessionSchema.index({ "users.firebaseUid": 1 }); // For finding user's current session
 
 const Session = mongoose.model("Session", SessionSchema);
 
@@ -616,6 +667,116 @@ app.put("/user/preferences/:firebaseUid", async (req, res) => {
   } catch (error) {
     console.error("Error updating user preferences:", error);
     res.status(500).json({ error: "Failed to update preferences" });
+  }
+});
+
+// -----------------------------------------------------
+// NEW USER OPERATIONS FOR REQUIREMENTS
+// -----------------------------------------------------
+
+// Update user start location
+app.put("/user/location/:firebaseUid", async (req, res) => {
+  try {
+    const { firebaseUid } = req.params;
+    const { lat, lng, address } = req.body;
+    
+    if (!lat || !lng || !address) {
+      return res.status(400).json({ error: "Missing location data (lat, lng, address)" });
+    }
+
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update start location
+    user.startLocation = {
+      lat,
+      lng,
+      address,
+      updatedAt: new Date()
+    };
+    user.lastActive = new Date();
+    await user.save();
+
+    console.log(`Updated start location for user: ${firebaseUid}`);
+
+    res.json({
+      success: true,
+      startLocation: user.startLocation
+    });
+  } catch (error) {
+    console.error("Error updating user location:", error);
+    res.status(500).json({ error: "Failed to update location" });
+  }
+});
+
+// Update user preferences (enhanced)
+app.put("/user/preferences-enhanced/:firebaseUid", async (req, res) => {
+  try {
+    const { firebaseUid } = req.params;
+    const { cuisines, priceRange, openNow } = req.body;
+    
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update preferences
+    if (cuisines !== undefined) user.defaultPreferences.cuisines = cuisines;
+    if (priceRange !== undefined) user.defaultPreferences.priceRange = priceRange;
+    if (openNow !== undefined) user.defaultPreferences.openNow = openNow;
+    user.defaultPreferences.updatedAt = new Date();
+    user.lastActive = new Date();
+    
+    await user.save();
+
+    console.log(`Updated preferences for user: ${firebaseUid}`);
+
+    res.json({
+      success: true,
+      preferences: user.defaultPreferences
+    });
+  } catch (error) {
+    console.error("Error updating user preferences:", error);
+    res.status(500).json({ error: "Failed to update preferences" });
+  }
+});
+
+// Get user's current session
+app.get("/user/current-session/:firebaseUid", async (req, res) => {
+  try {
+    const { firebaseUid } = req.params;
+    
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!user.currentSessionCode) {
+      return res.json({ currentSession: null });
+    }
+
+    // Find the actual session
+    const session = await Session.findOne({ sessionId: user.currentSessionCode });
+    if (!session) {
+      // Clean up stale session reference
+      user.currentSessionCode = null;
+      await user.save();
+      return res.json({ currentSession: null });
+    }
+
+    res.json({
+      currentSession: {
+        sessionId: session.sessionId,
+        users: session.users,
+        createdAt: session.createdAt,
+        lastActivity: session.lastActivity
+      }
+    });
+  } catch (error) {
+    console.error("Error getting current session:", error);
+    res.status(500).json({ error: "Failed to get current session" });
   }
 });
 
