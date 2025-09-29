@@ -1,6 +1,9 @@
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 import { useEffect, useState } from 'react';
 
+// Define libraries outside component to prevent reloading
+const libraries = ['places'];
+
 // Components
 import LobbyManager from './LobbyManager';
 import PreferencesPanel from './PreferencesPanel';
@@ -18,7 +21,7 @@ export default function Map() {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-    libraries: ['places'],
+    libraries: libraries,
   });
   const [center, setCenter] = useState({ lat: 32.8998, lng: -97.0403 });
   const [mapRef, setMapRef] = useState(null);
