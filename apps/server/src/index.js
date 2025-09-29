@@ -58,8 +58,8 @@ app.get("/health", (req, res) => {
     mongoConnected: mongoose.connection.readyState === 1,
     features: {
       userManagement: "implemented",
-      sessionManagement: "pending",
-      smartPreferences: "pending"
+      sessionManagement: "implemented",
+      smartPreferences: "implemented"
     }
   });
 });
@@ -1270,6 +1270,291 @@ app.post("/test/session/join", (req, res) => {
       startLocation,
       joinedAt: new Date(),
       userCount: 1
+    }
+  });
+});
+
+// -----------------------------------------------------
+// FEATURE 3: SMART PREFERENCE MATCHING ALGORITHM
+// -----------------------------------------------------
+
+// Smart restaurant search with preference matching
+app.post("/session/:sessionId/find-restaurants", async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { forceRefresh = false } = req.body;
+
+    const session = await Session.findOne({ sessionId });
+    if (!session) {
+      return res.status(404).json({ error: "Session not found" });
+    }
+
+    if (session.users.length === 0) {
+      return res.status(400).json({ error: "No users in session" });
+    }
+
+    // Check if we have cached results that are still valid
+    const now = new Date();
+    if (!forceRefresh && 
+        session.restaurantResults && 
+        session.restaurantResults.data && 
+        session.restaurantResults.data.length > 0 &&
+        session.restaurantResults.expiresAt > now) {
+      
+      console.log(`Returning cached results for session: ${sessionId}`);
+      return res.json({
+        success: true,
+        restaurants: session.restaurantResults.data,
+        cached: true,
+        cachedAt: session.restaurantResults.cachedAt,
+        expiresAt: session.restaurantResults.expiresAt,
+        userCount: session.users.length
+      });
+    }
+
+    // Analyze user preferences for smart matching
+    const preferenceAnalysis = analyzeGroupPreferences(session.users);
+    console.log(`Preference analysis for session ${sessionId}:`, preferenceAnalysis);
+
+    // Calculate midpoint of all user locations
+    const midpoint = calculateMidpoint(session.users);
+    if (!midpoint) {
+      return res.status(400).json({ error: "No user locations available for search" });
+    }
+
+    // Search for restaurants using smart preference matching
+    const restaurants = await searchRestaurantsWithSmartMatching(
+      midpoint, 
+      preferenceAnalysis, 
+      session.users
+    );
+
+    // Cache the results
+    session.restaurantResults = {
+      data: restaurants,
+      cachedAt: now,
+      expiresAt: new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes
+    };
+    session.lastActivity = now;
+    await session.save();
+
+    console.log(`Found ${restaurants.length} restaurants for session: ${sessionId}`);
+
+    res.json({
+      success: true,
+      restaurants,
+      cached: false,
+      searchedAt: now,
+      expiresAt: session.restaurantResults.expiresAt,
+      userCount: session.users.length,
+      preferenceAnalysis
+    });
+
+  } catch (error) {
+    console.error("Error finding restaurants:", error);
+    res.status(500).json({ error: "Failed to find restaurants" });
+  }
+});
+
+// Helper function: Analyze group preferences for smart matching
+function analyzeGroupPreferences(users) {
+  const cuisineCount = {};
+  const priceRanges = [];
+  let openNowCount = 0;
+
+  // Count cuisine preferences across all users
+  users.forEach(user => {
+    if (user.sessionPreferences && user.sessionPreferences.cuisines) {
+      user.sessionPreferences.cuisines.forEach(cuisine => {
+        cuisineCount[cuisine] = (cuisineCount[cuisine] || 0) + 1;
+      });
+    }
+    
+    if (user.sessionPreferences) {
+      if (user.sessionPreferences.price) {
+        priceRanges.push(user.sessionPreferences.price);
+      }
+      if (user.sessionPreferences.openNow) {
+        openNowCount++;
+      }
+    }
+  });
+
+  // Sort cuisines by popularity (most wanted first)
+  const sortedCuisines = Object.entries(cuisineCount)
+    .sort(([,a], [,b]) => b - a)
+    .map(([cuisine, count]) => ({ cuisine, count, percentage: (count / users.length) * 100 }));
+
+  // Determine most common price range
+  const priceCount = {};
+  priceRanges.forEach(price => {
+    priceCount[price] = (priceCount[price] || 0) + 1;
+  });
+  const mostCommonPrice = Object.entries(priceCount)
+    .sort(([,a], [,b]) => b - a)[0]?.[0] || '$$';
+
+  return {
+    totalUsers: users.length,
+    cuisinePreferences: sortedCuisines,
+    priorityCuisines: sortedCuisines.filter(c => c.count > 1), // Cuisines wanted by multiple users
+    fallbackCuisines: sortedCuisines.filter(c => c.count === 1), // Individual preferences
+    mostCommonPrice,
+    openNowPercentage: (openNowCount / users.length) * 100,
+    shouldFilterOpenNow: openNowCount > users.length / 2
+  };
+}
+
+// Helper function: Calculate midpoint of user locations
+function calculateMidpoint(users) {
+  const validLocations = users.filter(user => 
+    user.originCoordinates && 
+    user.originCoordinates.lat && 
+    user.originCoordinates.lng
+  );
+
+  if (validLocations.length === 0) return null;
+
+  const totalLat = validLocations.reduce((sum, user) => sum + user.originCoordinates.lat, 0);
+  const totalLng = validLocations.reduce((sum, user) => sum + user.originCoordinates.lng, 0);
+
+  return {
+    lat: totalLat / validLocations.length,
+    lng: totalLng / validLocations.length
+  };
+}
+
+// Helper function: Search restaurants with smart preference matching
+async function searchRestaurantsWithSmartMatching(midpoint, analysis, users) {
+  // This is a mock implementation - in production, you'd integrate with Google Places API
+  // For now, we'll simulate smart restaurant matching
+  
+  const mockRestaurants = [
+    {
+      name: "Tony's Italian Kitchen",
+      place_id: "mock_italian_1",
+      vicinity: "Downtown",
+      geometry: { location: { lat: midpoint.lat + 0.001, lng: midpoint.lng + 0.001 } },
+      rating: 4.5,
+      price_level: 2,
+      types: ["restaurant", "italian_restaurant"],
+      matchedCuisines: ["Italian"],
+      userCount: analysis.cuisinePreferences.find(c => c.cuisine === "Italian")?.count || 0
+    },
+    {
+      name: "Fusion Thai & Italian",
+      place_id: "mock_fusion_1",
+      vicinity: "Midtown",
+      geometry: { location: { lat: midpoint.lat - 0.001, lng: midpoint.lng + 0.002 } },
+      rating: 4.3,
+      price_level: 3,
+      types: ["restaurant", "thai_restaurant", "italian_restaurant"],
+      matchedCuisines: ["Thai", "Italian"],
+      userCount: (analysis.cuisinePreferences.find(c => c.cuisine === "Thai")?.count || 0) +
+                 (analysis.cuisinePreferences.find(c => c.cuisine === "Italian")?.count || 0)
+    },
+    {
+      name: "Casa Mexico",
+      place_id: "mock_mexican_1",
+      vicinity: "South District",
+      geometry: { location: { lat: midpoint.lat + 0.002, lng: midpoint.lng - 0.001 } },
+      rating: 4.2,
+      price_level: 2,
+      types: ["restaurant", "mexican_restaurant"],
+      matchedCuisines: ["Mexican"],
+      userCount: analysis.cuisinePreferences.find(c => c.cuisine === "Mexican")?.count || 0
+    },
+    {
+      name: "Sakura Sushi House",
+      place_id: "mock_sushi_1",
+      vicinity: "East Side",
+      geometry: { location: { lat: midpoint.lat - 0.002, lng: midpoint.lng - 0.002 } },
+      rating: 4.7,
+      price_level: 3,
+      types: ["restaurant", "sushi_restaurant", "japanese_restaurant"],
+      matchedCuisines: ["Sushi", "Japanese"],
+      userCount: (analysis.cuisinePreferences.find(c => c.cuisine === "Sushi")?.count || 0) +
+                 (analysis.cuisinePreferences.find(c => c.cuisine === "Japanese")?.count || 0)
+    }
+  ];
+
+  // Calculate distances to all users for each restaurant
+  const restaurantsWithDistances = mockRestaurants.map(restaurant => {
+    const distances = users
+      .filter(user => user.originCoordinates)
+      .map(user => {
+        const distance = calculateHaversineDistance(
+          restaurant.geometry.location.lat,
+          restaurant.geometry.location.lng,
+          user.originCoordinates.lat,
+          user.originCoordinates.lng
+        );
+        return { firebaseUid: user.firebaseUid, distance };
+      });
+
+    const avgDistance = distances.reduce((sum, d) => sum + d.distance, 0) / distances.length;
+    const maxDistance = Math.max(...distances.map(d => d.distance));
+    const fairnessScore = 1 - (maxDistance - avgDistance) / maxDistance; // Higher = more fair
+
+    return {
+      ...restaurant,
+      distances,
+      avgDistance: Math.round(avgDistance * 100) / 100,
+      maxDistance: Math.round(maxDistance * 100) / 100,
+      fairnessScore: Math.round(fairnessScore * 100) / 100
+    };
+  });
+
+  // Sort by smart matching criteria:
+  // 1. Number of users satisfied (userCount)
+  // 2. Fairness of location (fairnessScore)
+  // 3. Rating
+  return restaurantsWithDistances.sort((a, b) => {
+    if (b.userCount !== a.userCount) return b.userCount - a.userCount;
+    if (b.fairnessScore !== a.fairnessScore) return b.fairnessScore - a.fairnessScore;
+    return b.rating - a.rating;
+  });
+}
+
+// Helper function: Calculate distance between two points using Haversine formula
+function calculateHaversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in miles
+}
+
+// Test endpoint for smart preference matching (mock data)
+app.post("/test/smart-preferences", (req, res) => {
+  const mockUsers = [
+    { 
+      firebaseUid: "user1", 
+      sessionPreferences: { cuisines: ["Italian", "Mexican"], price: "$$", openNow: true }
+    },
+    { 
+      firebaseUid: "user2", 
+      sessionPreferences: { cuisines: ["Sushi", "Thai"], price: "$$$", openNow: false }
+    },
+    { 
+      firebaseUid: "user3", 
+      sessionPreferences: { cuisines: ["Italian", "Thai"], price: "$$", openNow: true }
+    }
+  ];
+
+  const analysis = analyzeGroupPreferences(mockUsers);
+  
+  res.json({
+    success: true,
+    message: "Smart preference analysis test successful",
+    mockUsers,
+    analysis,
+    explanation: {
+      priorityCuisines: "Italian and Thai (2 users each) - search these first",
+      fallbackCuisines: "Mexican and Sushi (1 user each) - include if needed",
+      strategy: "Find restaurants serving Italian AND/OR Thai first, then others"
     }
   });
 });
