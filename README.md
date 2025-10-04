@@ -17,9 +17,14 @@ FoodieMaps/
 │   │   │   ├── index.js             # FRONTEND - Main routing page
 │   │   │   ├── landing.js           # FRONTEND - Landing page
 │   │   │   ├── login.js             # FRONTEND - Authentication page
-│   │   │   └── maps.js              # FRONTEND - Protected maps page
+│   │   │   ├── maps.js              # FRONTEND - Protected maps page
+│   │   │   └── profile.js           # FRONTEND - User profile & preferences
+│   │   ├── public/
+│   │   │   ├── FoodieLogo.png       # FRONTEND - App logo asset
+│   │   │   └── team/                # FRONTEND - Team member photos
 │   │   └── src/
 │   │       ├── components/          # FRONTEND - React UI components
+│   │       │   ├── Header.jsx               # FRONTEND - Shared site header
 │   │       │   ├── Map.jsx                 # FRONTEND - Main orchestrator
 │   │       │   ├── LobbyManager.jsx        # FRONTEND - Session management UI
 │   │       │   ├── PreferencesPanel.jsx   # FRONTEND - Food preferences UI
@@ -33,9 +38,12 @@ FoodieMaps/
 │   │       │   ├── useSession.js           # FRONTEND - Session management
 │   │       │   ├── usePreferences.js       # FRONTEND - Preferences logic
 │   │       │   ├── useRouting.js           # FRONTEND - Route calculation
-│   │       │   └── useRestaurants.js       # FRONTEND - Restaurant search
+│   │       │   ├── useRestaurants.js       # FRONTEND - Restaurant search
+│   │       │   └── useUser.js              # FRONTEND - User profile & prefs
 │   │       └── lib/                 # FRONTEND - Configuration
-│   │           └── firebase.js             # FRONTEND - Firebase setup
+│   │       │   └── firebase.js             # FRONTEND - Firebase setup
+│   │       └── styles/              # FRONTEND - Global styles
+│   │           └── globals.css             # FRONTEND - Base CSS
 │   └── server/                       # BACKEND
 │       ├── .env                     # BACKEND - Environment variables
 │       ├── package.json             # BACKEND - Dependencies and scripts
