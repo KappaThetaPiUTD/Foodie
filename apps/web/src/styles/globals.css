@@ -16,6 +16,11 @@ body {
   color: #1a202c;
 }
 
+/* Ensure the app root stretches full height */
+html, body, #__next {
+  height: 100%;
+}
+
 /* Light Theme Color Palette */
 :root {
   --primary-50: #f0f9ff;

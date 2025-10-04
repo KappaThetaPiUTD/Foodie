@@ -72,7 +72,7 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -91,10 +91,10 @@ export default function LoginPage() {
           <h1 style={{
             fontSize: '2rem',
             fontWeight: '700',
-            color: '#667eea',
+            color: '#16a34a',
             marginBottom: '8px'
           }}>
-            🍽️ FoodieMaps
+            FoodieMaps
           </h1>
           <p style={{
             color: '#666',
@@ -146,7 +146,7 @@ export default function LoginPage() {
                   transition: 'border-color 0.3s',
                   boxSizing: 'border-box'
                 }}
-                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onFocus={(e) => e.target.style.borderColor = '#16a34a'}
                 onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                 placeholder="Enter your full name"
               />
@@ -177,7 +177,7 @@ export default function LoginPage() {
                 transition: 'border-color 0.3s',
                 boxSizing: 'border-box'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onFocus={(e) => e.target.style.borderColor = '#16a34a'}
               onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
               placeholder="Enter your email"
             />
@@ -207,7 +207,7 @@ export default function LoginPage() {
                 transition: 'border-color 0.3s',
                 boxSizing: 'border-box'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#667eea'}
+              onFocus={(e) => e.target.style.borderColor = '#16a34a'}
               onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
               placeholder="Enter your password"
             />
@@ -226,7 +226,7 @@ export default function LoginPage() {
             disabled={loading}
             style={{
               width: '100%',
-              backgroundColor: loading ? '#ccc' : '#667eea',
+              backgroundColor: loading ? '#ccc' : '#16a34a',
               color: 'white',
               border: 'none',
               padding: '14px',
@@ -238,10 +238,10 @@ export default function LoginPage() {
               marginBottom: '20px'
             }}
             onMouseOver={(e) => {
-              if (!loading) e.target.style.backgroundColor = '#5a6fd8';
+              if (!loading) e.target.style.backgroundColor = '#15803d';
             }}
             onMouseOut={(e) => {
-              if (!loading) e.target.style.backgroundColor = '#667eea';
+              if (!loading) e.target.style.backgroundColor = '#16a34a';
             }}
           >
             {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
@@ -264,7 +264,7 @@ export default function LoginPage() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#667eea',
+              color: '#16a34a',
                 textDecoration: 'underline',
                 cursor: 'pointer',
                 fontSize: '0.9rem'

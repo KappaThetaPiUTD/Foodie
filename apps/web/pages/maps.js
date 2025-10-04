@@ -22,7 +22,7 @@ export default function MapsPage() {
     <ProtectedRoute>
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)',
         padding: '20px'
       }}>
         {/* Header with user info and logout */}
@@ -31,25 +31,24 @@ export default function MapsPage() {
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '24px',
-          backgroundColor: 'rgba(255,255,255,0.15)',
+          backgroundColor: 'white',
           padding: '16px 24px',
           borderRadius: '12px',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)'
+          border: '1px solid rgba(17,24,39,0.08)'
         }}>
           <div>
             <h1 style={{
               fontSize: '24px',
               fontWeight: '700',
-              color: 'white',
+              color: '#0f172a',
               margin: '0 0 4px 0',
-              textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              textShadow: 'none'
             }}>
-              🍽️ FoodieMaps
+              FoodieMaps
             </h1>
             <p style={{
               fontSize: '14px',
-              color: 'rgba(255,255,255,0.8)',
+              color: '#374151',
               margin: 0
             }}>
               Welcome back, {currentUser?.displayName || currentUser?.email}!
@@ -60,21 +59,22 @@ export default function MapsPage() {
             <button
               onClick={() => router.push('/profile')}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)',
+                backgroundColor: 'transparent',
+                color: '#16a34a',
+                border: '1px solid #16a34a',
                 padding: '8px 16px',
                 borderRadius: '20px',
                 fontSize: '14px',
                 cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                e.target.style.backgroundColor = '#16a34a';
+                e.target.style.color = 'white';
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = '#16a34a';
               }}
             >
               Profile
@@ -83,21 +83,20 @@ export default function MapsPage() {
             <button
               onClick={handleLogout}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
+                backgroundColor: '#16a34a',
                 color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)',
+                border: '1px solid #16a34a',
                 padding: '8px 16px',
                 borderRadius: '20px',
                 fontSize: '14px',
                 cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                e.target.style.backgroundColor = '#15803d';
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                e.target.style.backgroundColor = '#16a34a';
               }}
             >
               Sign Out
@@ -121,7 +120,7 @@ export default function MapsPage() {
         }}>
           <p style={{
             fontSize: '14px',
-            color: 'rgba(255,255,255,0.7)'
+            color: '#374151'
           }}>
             Powered by Google Maps & Places API • Built with React & Next.js
           </p>

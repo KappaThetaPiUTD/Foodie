@@ -79,7 +79,7 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <div style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)',
         padding: '20px'
       }}>
         {/* Header */}
@@ -88,25 +88,24 @@ export default function ProfilePage() {
           justifyContent: 'space-between',
           alignItems: 'center',
           marginBottom: '24px',
-          backgroundColor: 'rgba(255,255,255,0.15)',
+          backgroundColor: 'white',
           padding: '16px 24px',
           borderRadius: '12px',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.2)'
+          border: '1px solid rgba(17,24,39,0.08)'
         }}>
           <div>
             <h1 style={{
               fontSize: '24px',
               fontWeight: '700',
-              color: 'white',
+              color: '#0f172a',
               margin: '0 0 4px 0',
-              textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              textShadow: 'none'
             }}>
               User Profile
             </h1>
             <p style={{
               fontSize: '14px',
-              color: 'rgba(255,255,255,0.8)',
+              color: '#374151',
               margin: 0
             }}>
               {currentUser?.displayName || currentUser?.email}
@@ -117,21 +116,22 @@ export default function ProfilePage() {
             <button
               onClick={() => router.push('/maps')}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)',
+                backgroundColor: 'transparent',
+                color: '#16a34a',
+                border: '1px solid #16a34a',
                 padding: '8px 16px',
                 borderRadius: '20px',
                 fontSize: '14px',
                 cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                e.target.style.backgroundColor = '#16a34a';
+                e.target.style.color = 'white';
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = '#16a34a';
               }}
             >
               Back to Maps
@@ -140,21 +140,20 @@ export default function ProfilePage() {
             <button
               onClick={handleLogout}
               style={{
-                backgroundColor: 'rgba(255,255,255,0.2)',
+                backgroundColor: '#16a34a',
                 color: 'white',
-                border: '1px solid rgba(255,255,255,0.3)',
+                border: '1px solid #16a34a',
                 padding: '8px 16px',
                 borderRadius: '20px',
                 fontSize: '14px',
                 cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.3)';
+                e.target.style.backgroundColor = '#15803d';
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                e.target.style.backgroundColor = '#16a34a';
               }}
             >
               Sign Out
@@ -202,19 +201,19 @@ export default function ProfilePage() {
               borderRadius: '8px'
             }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>
                   {userProfile.stats?.sessionsJoined || 0}
                 </div>
                 <div style={{ fontSize: '14px', color: '#666' }}>Sessions Joined</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>
                   {userProfile.stats?.restaurantsDiscovered || 0}
                 </div>
                 <div style={{ fontSize: '14px', color: '#666' }}>Restaurants Found</div>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#667eea' }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#16a34a' }}>
                   {userProfile.favoriteRestaurants?.length || 0}
                 </div>
                 <div style={{ fontSize: '14px', color: '#666' }}>Favorites</div>
@@ -241,7 +240,7 @@ export default function ProfilePage() {
                   alignItems: 'center',
                   padding: '8px',
                   borderRadius: '6px',
-                  backgroundColor: preferences.cuisines.includes(cuisine) ? '#667eea' : '#f0f0f0',
+                  backgroundColor: preferences.cuisines.includes(cuisine) ? '#16a34a' : '#f0f0f0',
                   color: preferences.cuisines.includes(cuisine) ? 'white' : '#333',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
@@ -307,7 +306,7 @@ export default function ProfilePage() {
               onClick={handleSavePreferences}
               disabled={saving}
               style={{
-                backgroundColor: saving ? '#ccc' : '#667eea',
+                backgroundColor: saving ? '#ccc' : '#16a34a',
                 color: 'white',
                 border: 'none',
                 padding: '14px 28px',
@@ -319,10 +318,10 @@ export default function ProfilePage() {
                 minWidth: '150px'
               }}
               onMouseOver={(e) => {
-                if (!saving) e.target.style.backgroundColor = '#5a6fd8';
+                if (!saving) e.target.style.backgroundColor = '#15803d';
               }}
               onMouseOut={(e) => {
-                if (!saving) e.target.style.backgroundColor = '#667eea';
+                if (!saving) e.target.style.backgroundColor = '#16a34a';
               }}
             >
               {saving ? 'Saving...' : 'Save Preferences'}
