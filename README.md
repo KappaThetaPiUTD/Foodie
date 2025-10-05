@@ -204,15 +204,29 @@ npm install
 2. Create a new project
 3. Enable Authentication → Email/Password
 4. Get your config from Project Settings → General
-5. Update `apps/web/src/lib/firebase.js` with your config
+5. Add Firebase config to your `.env.local` file (see step 4 below)
 
 ### 4. Environment Variables
 
 Create `apps/web/.env.local`:
 ```bash
+# Google Maps API Key
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Backend Socket.IO URL
 NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 ```
+
+> **Note:** You can copy `.env.example` to `.env.local` and fill in your actual values.
 
 Create `apps/server/.env` (optional):
 ```bash
@@ -291,32 +305,15 @@ npm run clean        # Clean build artifacts
 
 ## Deployment
 
-### Production Build
-```bash
-# Build the entire project
-npm run build
+**📚 For complete deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
 
-# Install dependencies for production
-npm run install:all
-```
+Quick overview:
+1. Deploy backend to **Railway** (`apps/server`)
+2. Deploy frontend to **Vercel** (`apps/web`)
+3. Update CORS in `apps/server/config/production.js`
+4. Configure Firebase & Google Maps for production domains
 
-### Environment Setup
-1. **Frontend (.env.production)**:
-   ```bash
-   NEXT_PUBLIC_SOCKET_URL=https://your-backend-domain.com
-   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_api_key
-   ```
-
-2. **Backend (.env)**:
-   ```bash
-   MONGO_URI=your_mongodb_connection_string
-   PORT=5000
-   NODE_ENV=production
-   ```
-
-
-
-See `DEPLOYMENT.md` for detailed deployment instructions.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions and troubleshooting.
 
 ## Development Workflow
 
