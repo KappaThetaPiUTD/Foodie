@@ -550,7 +550,7 @@ export default function LandingPage() {
               fontSize: '1.1rem',
               fontWeight: '500'
             }}>
-              Made by members of <a href="#" style={{ color: '#b45309', textDecoration: 'underline' }}>Kappa Theta Pi UTD</a>
+              Made by members of <a href="https://www.utdktp.org/" target="_blank" rel="noopener noreferrer" style={{ color: '#b45309', textDecoration: 'underline' }}>Kappa Theta Pi UTD</a>
             </p>
           </div>
         </div>
