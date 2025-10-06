@@ -18,10 +18,10 @@ export default function LandingPage() {
   };
 
   const teamMembers = [
-    { name: 'Aadhav Manimurugan', role: 'Full Stack Developer', link: 'https://aadhavmani.com/', image: '' },
-    { name: 'Ishaan Dhandapani', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ishaandhandapani/', image: '' },
+    { name: 'Aadhav Manimurugan', role: 'Full Stack Developer', link: 'https://www.linkedin.com/in/aadhav-/', image: '/team/Aadhav.jpeg' },
+    { name: 'Ishaan Dhandapani', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ishaandhandapani/', image: '/team/Ishaan.jpeg' },
     { name: 'Vignesh Selvam', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/vignesh-2004-selvam/', image: '' },
-    { name: 'Ethan Lobo', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ethanlobo/', image: '' },
+    { name: 'Ethan Lobo', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ethanlobo/', image: '/team/Ethan.jpeg' },
     { name: 'Ajay Kumaran', role: 'UI/UX Designer', link: 'https://www.linkedin.com/in/ajay-kumaran/', image: '' },
   ];
 
