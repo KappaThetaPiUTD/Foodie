@@ -20,9 +20,9 @@ export default function LandingPage() {
   const teamMembers = [
     { name: 'Aadhav Manimurugan', role: 'Full Stack Developer', link: 'https://www.linkedin.com/in/aadhav-/', image: '/team/Aadhav.jpeg' },
     { name: 'Ishaan Dhandapani', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ishaandhandapani/', image: '/team/Ishaan.jpeg' },
-    { name: 'Vignesh Selvam', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/vignesh-2004-selvam/', image: '' },
+    { name: 'Vignesh Selvam', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/vignesh-2004-selvam/', image: '/team/Vignesh.jpeg' },
     { name: 'Ethan Lobo', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ethanlobo/', image: '/team/Ethan.jpeg' },
-    { name: 'Ajay Kumaran', role: 'UI/UX Designer', link: 'https://www.linkedin.com/in/ajay-kumaran/', image: '' },
+    { name: 'Ajay Kumaran', role: 'UI/UX Designer', link: 'https://www.linkedin.com/in/ajay-kumaran/', image: '/team/Ajay.jpeg' },
   ];
 
   return (
@@ -453,10 +453,12 @@ export default function LandingPage() {
           </h2>
 
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '32px',
-            marginBottom: '48px'
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '40px',
+            marginBottom: '48px',
+            flexWrap: 'wrap',
+            padding: '0 20px'
           }}>
             {teamMembers.map((member, index) => (
               <a
@@ -466,32 +468,41 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 style={{
                   background: 'rgba(255,255,255,0.95)',
-                  padding: '28px 24px',
-                  borderRadius: '16px',
+                  padding: '32px 24px',
+                  borderRadius: '20px',
                   border: '1px solid rgba(17,24,39,0.08)',
                   textAlign: 'center',
                   textDecoration: 'none',
                   color: '#111827',
-                  transition: 'transform 0.2s ease, background 0.2s ease',
-                  display: 'block'
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  width: '170px',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.transform = 'translateY(-8px)';
                   e.currentTarget.style.background = 'white';
+                  e.currentTarget.style.boxShadow = '0 12px 32px rgba(180,83,9,0.18)';
+                  e.currentTarget.style.borderColor = 'rgba(180,83,9,0.25)';
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.background = 'rgba(255,255,255,0.95)';
+                  e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.borderColor = 'rgba(17,24,39,0.08)';
                 }}
               >
-                <div style={{ marginBottom: '16px' }}>
+                <div style={{ marginBottom: '20px' }}>
                   <div style={{
-                    width: '96px',
-                    height: '96px',
+                    width: '110px',
+                    height: '110px',
                     borderRadius: '50%',
                     overflow: 'hidden',
-                    border: '3px solid rgba(17,24,39,0.08)',
-                    margin: '0 auto'
+                    border: '4px solid rgba(180,83,9,0.12)',
+                    margin: '0 auto',
+                    transition: 'border-color 0.3s ease'
                   }}>
                     {member.image ? (
                       <img
@@ -509,7 +520,7 @@ export default function LandingPage() {
                         background: 'linear-gradient(135deg, rgba(253,230,138,0.7) 0%, rgba(253,186,116,0.5) 100%)',
                         color: '#111827',
                         fontWeight: 700,
-                        fontSize: '1.25rem'
+                        fontSize: '1.6rem'
                       }}>
                         {member.name.split(' ').map(n => n[0]).slice(0, 2).join('')}
                       </div>
@@ -517,23 +528,31 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <h3 style={{
-                  fontSize: '1.2rem',
+                  fontSize: '1.1rem',
                   fontWeight: '700',
-                  marginBottom: '6px'
+                  marginBottom: '8px',
+                  lineHeight: '1.3',
+                  color: '#111827',
+                  height: '42px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}>
                   {member.name}
                 </h3>
                 <p style={{
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   color: '#6b7280',
-                  marginBottom: '8px'
+                  marginBottom: '20px',
+                  lineHeight: '1.4',
+                  height: '22px'
                 }}>
                   {member.role}
                 </p>
                 <span style={{
-                  fontSize: '0.9rem',
+                  fontSize: '0.85rem',
                   color: '#b45309',
-                  textDecoration: 'underline'
+                  fontWeight: '600'
                 }}>
                   View profile →
                 </span>
