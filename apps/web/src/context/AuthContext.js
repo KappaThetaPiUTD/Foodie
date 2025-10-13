@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
@@ -42,6 +46,30 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
+  // Google Sign In
+  async function signInWithGoogle() {
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
+  }
+
+  // Phone Sign In - Setup reCAPTCHA
+  function setupRecaptcha(elementId) {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, elementId, {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        }
+      });
+    }
+    return window.recaptchaVerifier;
+  }
+
+  // Phone Sign In - Send verification code
+  async function signInWithPhone(phoneNumber, recaptchaVerifier) {
+    return signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
+  }
+
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -57,6 +85,9 @@ export function AuthProvider({ children }) {
     signup,
     login,
     logout,
+    signInWithGoogle,
+    signInWithPhone,
+    setupRecaptcha,
     loading
   };
 
