@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../src/context/AuthContext';
 import { useUser } from '../src/hooks/useUser';
 import ProtectedRoute from '../src/components/ProtectedRoute';
-import Header from '../src/components/Header';
+import PillNav from '../src/components/PillNav';
 
 const cuisineOptions = [
   "Italian", "Mexican", "Chinese", "Japanese", "Thai", "Indian", 
@@ -70,15 +70,33 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/');
+      router.push('/landing');
     } catch (error) {
       console.error('Failed to log out:', error);
     }
   };
 
+  // Navigation items for profile/settings screen
+  const navItems = [
+    { href: '/landing', label: 'Landing' },
+    { href: '/maps', label: 'Maps' },
+    { href: '/profile', label: 'Settings' },
+    { label: 'Logout', onClick: handleLogout }
+  ];
+
   return (
     <ProtectedRoute>
-      <Header />
+      <PillNav
+        logo="/FoodieLogo.png"
+        logoAlt="FoodieMaps"
+        items={navItems}
+        activeHref={router.pathname}
+        baseColor="#111827"
+        pillColor="#16a34a"
+        hoveredPillTextColor="#111827"
+        pillTextColor="#111827"
+        initialLoadAnimation={false}
+      />
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)',
@@ -103,7 +121,7 @@ export default function ProfilePage() {
               margin: '0 0 4px 0',
               textShadow: 'none'
             }}>
-              User Profile
+              User Profile & Settings
             </h1>
             <p style={{
               fontSize: '14px',
@@ -112,54 +130,6 @@ export default function ProfilePage() {
             }}>
               {currentUser?.displayName || currentUser?.email}
             </p>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              onClick={() => router.push('/maps')}
-              style={{
-                backgroundColor: 'transparent',
-                color: '#16a34a',
-                border: '1px solid #16a34a',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '14px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#16a34a';
-                e.target.style.color = 'white';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = '#16a34a';
-              }}
-            >
-              Back to Maps
-            </button>
-            
-            <button
-              onClick={handleLogout}
-              style={{
-                backgroundColor: '#16a34a',
-                color: 'white',
-                border: '1px solid #16a34a',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '14px',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#15803d';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = '#16a34a';
-              }}
-            >
-              Sign Out
-            </button>
           </div>
         </div>
 

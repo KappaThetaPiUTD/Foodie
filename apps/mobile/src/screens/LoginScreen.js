@@ -15,9 +15,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithCredential,
-  PhoneAuthProvider,
-  signInWithPhoneNumber,
-  RecaptchaVerifier
+  PhoneAuthProvider
 } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import * as Google from 'expo-auth-session/providers/google';
@@ -128,12 +126,23 @@ export default function LoginScreen({ navigation }) {
       Alert.alert('Success', 'Verification code sent to your phone');
     } catch (error) {
       console.error('Phone auth error:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       let errorMessage = 'Failed to send verification code';
 
       if (error.code === 'auth/invalid-phone-number') {
         errorMessage = 'Invalid phone number format';
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = 'Too many requests. Please try again later';
+      } else if (error.code === 'auth/quota-exceeded') {
+        errorMessage = 'SMS quota exceeded. Please try again later or use a test phone number.';
+      } else if (error.code === 'auth/missing-app-credential') {
+        errorMessage = 'App verification failed. You may need to configure SHA-1 certificate in Firebase Console.';
+      } else if (error.code === 'auth/captcha-check-failed') {
+        errorMessage = 'reCAPTCHA verification failed. Please try again.';
+      } else {
+        // Show the actual error for debugging
+        errorMessage = `${errorMessage}\n\nError: ${error.code || 'unknown'}\n${error.message}`;
       }
 
       Alert.alert('Error', errorMessage);

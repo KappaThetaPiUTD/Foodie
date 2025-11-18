@@ -40,7 +40,8 @@ export default function LandingPage() {
   // Configure navigation items based on auth state
   const navItems = currentUser ? [
     { href: '/landing', label: 'Landing' },
-    { href: '/profile', label: 'Profile' },
+    { href: '/maps', label: 'Maps' },
+    { href: '/profile', label: 'Settings' },
     { label: 'Logout', onClick: handleLogout }
   ] : [
     { href: '/landing', label: 'Landing' },
