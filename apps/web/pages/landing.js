@@ -1,10 +1,13 @@
 import { useRouter } from 'next/router';
 import { useAuth } from '../src/context/AuthContext';
 import { useEffect } from 'react';
+import PillNav from '../src/components/PillNav';
+import { motion } from 'framer-motion';
+import CardSwap, { Card } from '../src/components/CardSwap';
 
 export default function LandingPage() {
   const router = useRouter();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -17,6 +20,15 @@ export default function LandingPage() {
     router.push('/login');
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (e) {
+      // no-op
+    }
+  };
+
   const teamMembers = [
     { name: 'Aadhav Manimurugan', role: 'Full Stack Developer', link: 'https://www.linkedin.com/in/aadhav-/', image: '/team/Aadhav.jpeg' },
     { name: 'Ishaan Dhandapani', role: 'Frontend Developer', link: 'https://www.linkedin.com/in/ishaandhandapani/', image: '/team/Ishaan.jpeg' },
@@ -25,34 +37,64 @@ export default function LandingPage() {
     { name: 'Ajay Kumaran', role: 'UI/UX Designer', link: 'https://www.linkedin.com/in/ajay-kumaran/', image: '/team/Ajay.jpeg' },
   ];
 
+  // Configure navigation items based on auth state
+  const navItems = currentUser ? [
+    { href: '/landing', label: 'Landing' },
+    { href: '/profile', label: 'Profile' },
+    { label: 'Logout', onClick: handleLogout }
+  ] : [
+    { href: '/landing', label: 'Landing' },
+    { href: '/login', label: 'Login' }
+  ];
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#ffffff',
-      paddingTop: '80px' // Space for header
-    }}>
-      {/* Hero Section - What We Are & Login */}
+    <>
+      <PillNav
+        logo="/FoodieLogo.png"
+        logoAlt="FoodieMaps"
+        items={navItems}
+        activeHref={router.pathname}
+        baseColor="#111827"
+        pillColor="#16a34a"
+        hoveredPillTextColor="#111827"
+        pillTextColor="#111827"
+      />
+      <div style={{
+        minHeight: '100vh',
+        background: '#ffffff'
+      }}>
+        {/* Hero Section - What We Are & Login */}
       <section style={{
         minHeight: '90vh',
         background: 'linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: '60px 20px',
         textAlign: 'center',
         color: '#111827'
       }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ maxWidth: '900px', margin: '0 auto' }}
+        >
           {/* Logo */}
-          <div style={{
-            marginBottom: '32px',
-            display: 'flex',
-            justifyContent: 'center'
-          }}>
-            <img 
-              src="/FoodieLogo.png" 
-              alt="FoodieMaps Logo" 
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            style={{
+              marginBottom: '32px',
+              display: 'flex',
+              justifyContent: 'center'
+            }}
+          >
+            <img
+              src="/FoodieLogo.png"
+              alt="FoodieMaps Logo"
               style={{
                 width: '120px',
                 height: '120px',
@@ -63,374 +105,378 @@ export default function LandingPage() {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
               }}
             />
-          </div>
+          </motion.div>
 
-          <h1 style={{
-            fontSize: '3.5rem',
-            fontWeight: '700',
-            marginBottom: '24px',
-            letterSpacing: '-1px',
-            color: '#0f172a'
-          }}>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            style={{
+              fontSize: '3.5rem',
+              fontWeight: '700',
+              marginBottom: '24px',
+              letterSpacing: '-1px',
+              color: '#0f172a'
+            }}
+          >
             FoodieMaps
-          </h1>
+          </motion.h1>
 
-          <p style={{
-            fontSize: '1.5rem',
-            marginBottom: '48px',
-            lineHeight: '1.6',
-            fontWeight: '300',
-            color: '#1f2937'
-          }}>
-            Finding the perfect restaurant for your group has never been easier. 
-            FoodieMaps brings together everyone's preferences to discover dining spots 
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            style={{
+              fontSize: '1.5rem',
+              marginBottom: '48px',
+              lineHeight: '1.6',
+              fontWeight: '300',
+              color: '#1f2937'
+            }}
+          >
+            Finding the perfect restaurant for your group has never been easier.
+            FoodieMaps brings together everyone's preferences to discover dining spots
             that satisfy the entire party.
-          </p>
+          </motion.p>
 
-        <button
-          onClick={handleGetStarted}
-          style={{
-            backgroundColor: 'white',
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleGetStarted}
+            style={{
+              backgroundColor: 'white',
               color: '#16a34a',
-            border: 'none',
+              border: 'none',
               padding: '18px 48px',
               borderRadius: '12px',
-            fontSize: '1.2rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-              transition: 'all 0.3s ease'
-          }}
-          onMouseOver={(e) => {
-            e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = '0 12px 32px rgba(0,0,0,0.25)';
-          }}
-          onMouseOut={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
-          }}
-        >
+              fontSize: '1.2rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+              transition: 'box-shadow 0.3s ease'
+            }}
+          >
             Get Started
-        </button>
+          </motion.button>
 
-        <p style={{
-            fontSize: '0.95rem',
-            color: '#374151',
-          marginTop: '24px'
-        }}>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1 }}
+            style={{
+              fontSize: '0.95rem',
+              color: '#374151',
+              marginTop: '24px'
+            }}
+          >
             Free to use • No credit card required
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </section>
 
-      {/* How to Use Section */}
+      {/* Combined How to Use & What We're Working On Section */}
       <section style={{
         padding: '80px 20px',
         background: '#f9fafb'
       }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '2.5rem',
-            fontWeight: '700',
-            textAlign: 'center',
-            marginBottom: '60px',
-            color: '#111827'
-          }}>
-            How to Use FoodieMaps
-          </h2>
-
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '40px'
+            gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+            gap: '60px',
+            alignItems: 'start'
           }}>
-            <div style={{
-              background: 'white',
-              padding: '32px',
-              borderRadius: '16px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-              textAlign: 'center'
-            }}>
+            {/* Left: How to Use */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+              >
+                <span style={{
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: '#16a34a'
+                }}>
+                  How it works
+                </span>
+                <h2 style={{
+                  fontSize: '2.25rem',
+                  fontWeight: '700',
+                  color: '#111827',
+                  margin: 0
+                }}>
+                  Plan a restaurant night in 3 steps
+                </h2>
+                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.6', margin: 0 }}>
+                  Invite your friends, sync preferences, and let FoodieMaps surface the best spots.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                style={{
+                  background: 'white',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  gap: '20px',
+                  alignItems: 'flex-start'
+                }}
+              >
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #86efac 0%, #bbf7d0 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#065f46',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  flexShrink: 0
+                }}>
+                  1
+                </div>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    marginBottom: '8px',
+                    color: '#111827'
+                  }}>
+                    Create or Join Session
+                  </h3>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: '#6b7280',
+                    lineHeight: '1.6'
+                  }}>
+                    Start a new dining session or join an existing one using a unique session code.
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                style={{
+                  background: 'white',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  gap: '20px',
+                  alignItems: 'flex-start'
+                }}
+              >
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #86efac 0%, #bbf7d0 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#065f46',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  flexShrink: 0
+                }}>
+                  2
+                </div>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    marginBottom: '8px',
+                    color: '#111827'
+                  }}>
+                    Set Your Preferences
+                  </h3>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: '#6b7280',
+                    lineHeight: '1.6'
+                  }}>
+                    Enter your location, select cuisine types, dietary restrictions, and budget range.
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                style={{
+                  background: 'white',
+                  padding: '24px',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  gap: '20px',
+                  alignItems: 'flex-start'
+                }}
+              >
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  background: 'linear-gradient(135deg, #86efac 0%, #bbf7d0 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#065f46',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  flexShrink: 0
+                }}>
+                  3
+                </div>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    marginBottom: '8px',
+                    color: '#111827'
+                  }}>
+                    Discover Restaurants
+                  </h3>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: '#6b7280',
+                    lineHeight: '1.6'
+                  }}>
+                    Our algorithm finds restaurants that match everyone's preferences and shows them on the map.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right: CardSwap with What We're Working On */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+              >
+                <span style={{
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.15em',
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: '#6366f1'
+                }}>
+                  What's coming
+                </span>
+                <h2 style={{
+                  fontSize: '2.25rem',
+                  fontWeight: '700',
+                  color: '#111827',
+                  margin: 0
+                }}>
+                  Features on the near-term roadmap
+                </h2>
+                <p style={{ color: '#475569', fontSize: '1rem', lineHeight: '1.6', margin: 0 }}>
+                  Here’s what the team is iterating on right now!
+                </p>
+              </motion.div>
+
               <div style={{
-                width: '60px',
-                height: '60px',
-                background: 'linear-gradient(135deg, #86efac 0%, #bbf7d0 100%)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                color: '#065f46',
-                fontSize: '1.8rem',
-                fontWeight: '700'
+                height: '520px',
+                position: 'relative',
+                marginTop: '100px',
+                marginLeft: '180px',
+                overflow: 'visible'
               }}>
-                1
+                <CardSwap
+                  width={540}
+                  height={360}
+                  cardDistance={40}
+                  verticalDistance={45}
+                  delay={4200}
+                  pauseOnHover={true}
+                  easing="power"
+                >
+                  <Card style={{
+                    background: 'white',
+                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 18px 50px rgba(15, 23, 42, 0.15)',
+                    border: '2px solid #e5e7eb'
+                  }}>
+                    <h3>Real-time Voting System</h3>
+                    <p>Allow group members to vote on restaurant options in real-time.</p>
+                  </Card>
+                  <Card style={{
+                    background: 'white',
+                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 18px 50px rgba(15, 23, 42, 0.15)',
+                    border: '2px solid #e5e7eb'
+                  }}>
+                    <h3>Advanced Filtering</h3>
+                    <p>Filter by ratings, distance, price range, and availability.</p>
+                  </Card>
+                  <Card style={{
+                    background: 'white',
+                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 18px 50px rgba(15, 23, 42, 0.15)',
+                    border: '2px solid #e5e7eb'
+                  }}>
+                    <h3>Reservation Integration</h3>
+                    <p>Book tables directly through the app once your group decides.</p>
+                  </Card>
+                  <Card style={{
+                    background: 'white',
+                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 18px 50px rgba(15, 23, 42, 0.15)',
+                    border: '2px solid #e5e7eb'
+                  }}>
+                    <h3>Saved Favorites</h3>
+                    <p>Save your favorite restaurants and create custom lists.</p>
+                  </Card>
+                  <Card style={{
+                    background: 'white',
+                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 18px 50px rgba(15, 23, 42, 0.15)',
+                    border: '2px solid #e5e7eb'
+                  }}>
+                    <h3>Mobile App</h3>
+                    <p>Native iOS and Android apps for a seamless mobile experience.</p>
+                  </Card>
+                  <Card style={{
+                    background: 'white',
+                    padding: '40px',
+                    borderRadius: '20px',
+                    boxShadow: '0 18px 50px rgba(15, 23, 42, 0.15)',
+                    border: '2px solid #e5e7eb'
+                  }}>
+                    <h3>Social Features</h3>
+                    <p>Share dining experiences and restaurant reviews with friends.</p>
+                  </Card>
+                </CardSwap>
               </div>
-              <h3 style={{
-                fontSize: '1.4rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Create or Join Session
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Start a new dining session or join an existing one using a unique session code.
-              </p>
-            </div>
-
-            <div style={{
-              background: 'white',
-              padding: '32px',
-              borderRadius: '16px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                background: 'linear-gradient(135deg, #86efac 0%, #bbf7d0 100%)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                color: '#065f46',
-                fontSize: '1.8rem',
-                fontWeight: '700'
-              }}>
-                2
-              </div>
-              <h3 style={{
-                fontSize: '1.4rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Set Your Preferences
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Enter your location, select cuisine types, dietary restrictions, and budget range.
-              </p>
-            </div>
-
-            <div style={{
-              background: 'white',
-              padding: '32px',
-              borderRadius: '16px',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-              textAlign: 'center'
-            }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                background: 'linear-gradient(135deg, #86efac 0%, #bbf7d0 100%)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                color: '#065f46',
-                fontSize: '1.8rem',
-                fontWeight: '700'
-              }}>
-                3
-              </div>
-              <h3 style={{
-                fontSize: '1.4rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Discover Restaurants
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Our algorithm finds restaurants that match everyone's preferences and shows them on the map.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Work in Progress Section */}
-      <section style={{
-        padding: '80px 20px',
-        background: 'white'
-      }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '2.5rem',
-            fontWeight: '700',
-            textAlign: 'center',
-            marginBottom: '24px',
-            color: '#111827'
-          }}>
-            What We're Working On
-          </h2>
-          <p style={{
-            fontSize: '1.1rem',
-            textAlign: 'center',
-            color: '#6b7280',
-            marginBottom: '48px',
-            maxWidth: '700px',
-            margin: '0 auto 48px'
-          }}>
-            We're constantly improving FoodieMaps. Here's what's coming next:
-          </p>
-
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '24px'
-          }}>
-            <div style={{
-              padding: '24px',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              background: '#f9fafb'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Real-time Voting System
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Allow group members to vote on restaurant options in real-time.
-              </p>
-            </div>
-
-            <div style={{
-              padding: '24px',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              background: '#f9fafb'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Advanced Filtering
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Filter by ratings, distance, price range, and availability.
-              </p>
-            </div>
-
-            <div style={{
-              padding: '24px',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              background: '#f9fafb'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Reservation Integration
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Book tables directly through the app once your group decides.
-              </p>
-            </div>
-
-            <div style={{
-              padding: '24px',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              background: '#f9fafb'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Saved Favorites
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Save your favorite restaurants and create custom lists.
-              </p>
-            </div>
-
-            <div style={{
-              padding: '24px',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              background: '#f9fafb'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Mobile App
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Native iOS and Android apps for a seamless mobile experience.
-        </p>
-      </div>
-
-            <div style={{
-              padding: '24px',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb',
-              background: '#f9fafb'
-            }}>
-              <h3 style={{
-                fontSize: '1.2rem',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: '#111827'
-              }}>
-                Social Features
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.6'
-              }}>
-                Share dining experiences and restaurant reviews with friends.
-              </p>
             </div>
           </div>
         </div>
@@ -443,14 +489,20 @@ export default function LandingPage() {
         color: '#111827'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h2 style={{
-            fontSize: '2.5rem',
-            fontWeight: '700',
-            textAlign: 'center',
-            marginBottom: '48px'
-          }}>
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: '700',
+              textAlign: 'center',
+              marginBottom: '48px'
+            }}
+          >
             Meet the Team
-          </h2>
+          </motion.h2>
 
           <div style={{
             display: 'flex',
@@ -461,8 +513,14 @@ export default function LandingPage() {
             padding: '0 20px'
           }}>
             {teamMembers.map((member, index) => (
-              <a
+              <motion.a
                 key={index}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 href={member.link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -556,7 +614,7 @@ export default function LandingPage() {
                 }}>
                   View profile →
                 </span>
-              </a>
+              </motion.a>
             ))}
           </div>
 
@@ -590,6 +648,7 @@ export default function LandingPage() {
           © 2025 FoodieMaps. All rights reserved.
         </p>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

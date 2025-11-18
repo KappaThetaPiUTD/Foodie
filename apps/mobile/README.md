@@ -13,9 +13,9 @@ cp .env.example .env
 
 Then edit `.env` and add your API keys (same as web app).
 
-### 2. Update app.json with Google Maps API Key
+### 2. Provide Google Maps API Key
 
-Edit `app.json` and replace `YOUR_GOOGLE_MAPS_API_KEY` with your actual Google Maps API key in both iOS and Android sections.
+The Expo config now reads the Google Maps API key from your `.env` file via `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY`. Add it when you create `.env`; no need to edit the config file manually.
 
 ### 3. Install Dependencies
 
@@ -106,7 +106,7 @@ npm run dev:mobile
 ```
 apps/mobile/
 ├── App.js                       # Main app with navigation
-├── app.json                     # Expo configuration
+├── app.config.js               # Expo configuration (loads env vars)
 ├── src/
 │   ├── screens/
 │   │   ├── LandingScreen.js     # Landing page
@@ -154,7 +154,7 @@ The app uses a hybrid navigation approach:
 - Clear cache: `npx expo start -c`
 
 ### Maps not showing
-- Verify Google Maps API key in `app.json`
+- Verify Google Maps API key is set in `.env` (EXPO_PUBLIC_GOOGLE_MAPS_API_KEY)
 - Check that Maps SDK is enabled in Google Cloud Console
 
 ## Next Steps

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../src/context/AuthContext';
 import { useUser } from '../src/hooks/useUser';
 import ProtectedRoute from '../src/components/ProtectedRoute';
+import Header from '../src/components/Header';
 
 const cuisineOptions = [
   "Italian", "Mexican", "Chinese", "Japanese", "Thai", "Indian", 
@@ -77,6 +78,7 @@ export default function ProfilePage() {
 
   return (
     <ProtectedRoute>
+      <Header />
       <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)',

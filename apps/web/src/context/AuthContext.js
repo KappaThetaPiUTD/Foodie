@@ -75,9 +75,23 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
+    }, (error) => {
+      console.error('Auth state change error:', error);
+      setLoading(false);
     });
 
-    return unsubscribe;
+    // Set a timeout to stop loading after 5 seconds if Firebase doesn't respond
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Firebase auth timeout - continuing without auth');
+        setLoading(false);
+      }
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const value = {
@@ -93,7 +107,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

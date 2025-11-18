@@ -1,164 +1,65 @@
-# FoodieMaps
-
-A collaborative food discovery app where people can join lobbies, share food preferences, and find restaurants that satisfy everyone in the group using Google Maps and Places API.
-
 ## Project Structure
 
 ```
 FoodieMaps/
 ├── apps/
-│   ├── web/                          # FRONTEND
-│   │   ├── .env.local               # FRONTEND - Environment variables
-│   │   ├── .env.production.example  # FRONTEND - Production environment template
-│   │   ├── package.json             # FRONTEND - Dependencies and scripts
-│   │   ├── next.config.js           # FRONTEND - Next.js configuration
+│   ├── web/                          # Next.js web frontend
 │   │   ├── pages/
-│   │   │   ├── _app.js              # FRONTEND - App wrapper with AuthProvider
-│   │   │   ├── index.js             # FRONTEND - Main routing page
-│   │   │   ├── landing.js           # FRONTEND - Landing page
-│   │   │   ├── login.js             # FRONTEND - Authentication page
-│   │   │   ├── maps.js              # FRONTEND - Protected maps page
-│   │   │   └── profile.js           # FRONTEND - User profile & preferences
-│   │   ├── public/
-│   │   │   ├── FoodieLogo.png       # FRONTEND - App logo asset
-│   │   │   └── team/                # FRONTEND - Team member photos
+│   │   │   ├── _app.js               # Auth context + layout wrapper
+│   │   │   ├── index.js              # Redirects based on auth state
+│   │   │   ├── landing.js            # Marketing + onboarding page
+│   │   │   ├── login.js              # Firebase auth UI
+│   │   │   ├── maps.js               # Protected collaborative map
+│   │   │   └── profile.js            # User preferences dashboard
 │   │   └── src/
-│   │       ├── components/          # FRONTEND - React UI components
-│   │       │   ├── Header.jsx               # FRONTEND - Shared site header
-│   │       │   ├── Map.jsx                 # FRONTEND - Main orchestrator
-│   │       │   ├── LobbyManager.jsx        # FRONTEND - Session management UI
-│   │       │   ├── PreferencesPanel.jsx   # FRONTEND - Food preferences UI
-│   │       │   ├── LocationControls.jsx   # FRONTEND - Route planning controls
-│   │       │   ├── MapView.jsx             # FRONTEND - Google Maps display
-│   │       │   ├── RestaurantList.jsx     # FRONTEND - Restaurant results
-│   │       │   └── ProtectedRoute.js       # FRONTEND - Authentication wrapper
-│   │       ├── context/             # FRONTEND - React contexts
-│   │       │   └── AuthContext.js          # FRONTEND - Firebase authentication
-│   │       ├── hooks/               # FRONTEND - Custom React hooks
-│   │       │   ├── useSession.js           # FRONTEND - Session management
-│   │       │   ├── usePreferences.js       # FRONTEND - Preferences logic
-│   │       │   ├── useRouting.js           # FRONTEND - Route calculation
-│   │       │   ├── useRestaurants.js       # FRONTEND - Restaurant search
-│   │       │   └── useUser.js              # FRONTEND - User profile & prefs
-│   │       └── lib/                 # FRONTEND - Configuration
-│   │       │   └── firebase.js             # FRONTEND - Firebase setup
-│   │       └── styles/              # FRONTEND - Global styles
-│   │           └── globals.css             # FRONTEND - Base CSS
-│   └── server/                       # BACKEND
-│       ├── .env                     # BACKEND - Environment variables
-│       ├── package.json             # BACKEND - Dependencies and scripts
-│       ├── config/
-│       │   └── production.js        # BACKEND - Production configuration
-│       └── src/
-│           └── index.js             # BACKEND - Express server + Socket.IO + MongoDB
-├── package.json                     # SHARED - Root workspace config and scripts
-├── package-lock.json                # SHARED - Dependency lock file
-├── .gitignore                       # SHARED - Git ignore rules
-├── DEPLOYMENT.md                    # SHARED - Deployment guide
-└── README.md                        # SHARED - Documentation
+│   │       ├── components/
+│   │       │   ├── Map.jsx           # Main map orchestrator
+│   │       │   ├── LobbyManager.jsx
+│   │       │   ├── PreferencesPanel.jsx
+│   │       │   ├── LocationControls.jsx
+│   │       │   ├── MapView.jsx
+│   │       │   ├── RestaurantList.jsx
+│   │       │   ├── PillNav.jsx       # Floating navigation pill
+│   │       │   └── CardSwap.jsx      # GSAP-powered landing animation
+│   │       ├── context/
+│   │       │   └── AuthContext.js    # Firebase auth provider
+│   │       ├── hooks/                # Reusable state machines (sessions, prefs, routing, etc.)
+│   │       └── lib/
+│   │           └── firebase.js
+│   ├── mobile/                       # Expo / React Native app
+│   │   ├── App.js
+│   │   └── src/
+│   │       ├── screens/
+│   │       ├── context/
+│   │       └── lib/
+│   └── server/                       # Express + Socket.IO + MongoDB API
+│       ├── package.json
+│       └── src/index.js
+├── .github/workflows/ci.yml          # CI: lint, test, build, deploy
+├── .husky/pre-commit                 # git hook running lint-staged
+├── jest.config.js / jest.setup.js    # Shared Jest config
+├── .eslintrc.js / .prettierrc.js     # Monorepo lint/format rules
+├── package.json                      # npm workspaces + shared scripts
+├── package-lock.json
+├── .env                              # Root secrets (Mongo URI, etc.)
+└── README.md
 ```
 
-### Frontend Architecture (Modular Components)
+### Important Files
 
-#### Core Components (`apps/web/src/components/`)
+**`apps/web/src/components/Map.jsx`** - Main orchestrator that coordinates all components and manages Google Maps API loading.
 
-**`Map.jsx`** - FRONTEND Main Orchestrator (180 lines)
-- Coordinates all other components
-- Manages Google Maps API loading
-- Handles data flow between components
-- Integrates all hooks and manages application state
+**`apps/web/src/hooks/useSession.js`** - Handles session joining, real-time sync via Socket.IO, and localStorage persistence.
 
-**`LobbyManager.jsx`** - FRONTEND Session Management
-- Session ID input and joining interface
-- Connection status display
-- Collaboration setup UI
+**`apps/web/src/hooks/useRestaurants.js`** - Integrates with Google Places API to search restaurants based on user preferences and locations.
 
-**`PreferencesPanel.jsx`** - FRONTEND Food Preferences UI
-- Cuisine selection checkboxes (Pizza, Sushi, etc.)
-- Price range dropdown ($, $$, $$$, $$$$)
-- "Open now" toggle
-- Peer preferences display
+**`apps/server/src/index.js`** - Express server with Socket.IO for real-time communication and MongoDB connection for data persistence.
 
-**`LocationControls.jsx`** - FRONTEND Route Planning
-- Origin/destination autocomplete inputs
-- Action buttons (Route, Share Start, Clear, Find Restaurants)
-- Google Places integration
+**`apps/web/src/context/AuthContext.js`** - Firebase authentication context providing login/signup/logout functions throughout the app.
 
-**`MapView.jsx`** - FRONTEND Pure Map Display
-- Google Maps rendering and interaction
-- Dual route display (user + peer routes)
-- Restaurant markers with info windows
-- Map centering and zoom control
+**`apps/web/src/components/PillNav.jsx`** - Floating navigation used across marketing pages; handles hover animations and responsive menu state.
 
-**`RestaurantList.jsx`** - FRONTEND Results Display
-- Formatted restaurant list with ratings
-- Distance calculations to both users
-- Scrollable results area
-
-#### Custom Hooks (`apps/web/src/hooks/`)
-
-**`useSession.js`** - FRONTEND Session Management
-- Session joining and ID management
-- BroadcastChannel setup for cross-tab communication
-- localStorage integration for persistence
-- Message broadcasting utilities
-
-**`usePreferences.js`** - FRONTEND Food Preferences Logic
-- Cuisine selection state management
-- Price range and timing preferences
-- Auto-broadcast changes to other users
-- Preference matching algorithm
-
-**`useRouting.js`** - FRONTEND Route Management
-- Google Maps Directions API integration
-- Autocomplete place selection handling
-- Route calculation and display
-- Origin location sharing between users
-
-**`useRestaurants.js`** - FRONTEND Restaurant Discovery
-- Google Places Text Search integration
-- Geocoding and midpoint calculation
-- Haversine distance formula for fairness
-- Results filtering and sorting by preferences
-
-#### Backend Files (`apps/server/`)
-
-**`src/index.js`** - BACKEND Express Server
-- HTTP server setup and configuration
-- Socket.IO WebSocket handling for real-time communication
-- MongoDB connection (optional database persistence)
-- API routes for sessions and preferences
-- CORS configuration for cross-origin requests
-
-**`package.json`** - BACKEND Dependencies
-- Express.js web framework
-- Socket.IO for WebSocket communication
-- Mongoose for MongoDB integration
-- CORS middleware
-- dotenv for environment variables
-
-**`.env`** - BACKEND Environment Variables
-- `MONGO_URI` - MongoDB connection string (optional)
-- `PORT` - Server port configuration (default: 5000)
-
-#### Shared/Root Files
-
-**`package.json`** - SHARED Root Workspace Configuration
-- npm workspaces setup for `apps/web` and `apps/server`
-- Root-level scripts (`dev:all`, `dev:all:two-web`)
-- Concurrently configuration for running multiple services
-
-**`package-lock.json`** - SHARED Dependency Lock File
-- Exact dependency versions for entire project
-- Ensures consistent installations across environments
-
-**`.gitignore`** - SHARED Git Configuration
-- Prevents sensitive files from being committed (`.env`, `.env.local`)
-- Ignores build artifacts (`node_modules`, `.next`)
-
-**`README.md`** - SHARED Documentation
-- Project documentation and setup instructions
-- Architecture overview and component explanations
+**`apps/web/src/components/CardSwap.jsx`** - Landing-page GSAP animation that only runs while visible, showcasing upcoming features.
 
 ## Requirements
 
@@ -184,31 +85,29 @@ cd FoodieMaps
 npm install
 ```
 
-### 2. Google Maps Setup
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. **Enable billing** (required for Maps API)
-4. Enable these APIs:
-   - Maps JavaScript API
-   - Places API (New)
-   - Geocoding API
-5. Create credentials → API Key
-6. Set HTTP referrer restrictions:
-   ```
-   http://localhost:3001/*
-   http://localhost:3002/*
-   ```
+### 2. Setup API Keys
 
-### 3. Firebase Setup
+**Google Maps:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a project and enable billing
+3. Enable APIs: Maps JavaScript API, Places API, Geocoding API
+4. Create an API key
+
+**Firebase:**
 1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project
+2. Create a project
 3. Enable Authentication → Email/Password
 4. Get your config from Project Settings → General
-5. Add Firebase config to your `.env.local` file (see step 4 below)
 
-### 4. Environment Variables
+### 3. Environment Variables
 
-Create `apps/web/.env.local`:
+**Root (`.env`):**
+```bash
+# MongoDB (Optional)
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/foodiemaps
+```
+
+**Web App (`apps/web/.env.local`):**
 ```bash
 # Google Maps API Key
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
@@ -226,210 +125,101 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 ```
 
-> **Note:** You can copy `.env.example` to `.env.local` and fill in your actual values.
-
-Create `apps/server/.env` (optional):
+**Mobile App (`apps/mobile/.env`):**
 ```bash
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/foodiemaps
-PORT=5000
+# Same Firebase configuration as web (use EXPO_PUBLIC_ prefix)
+EXPO_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key_here
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Backend Socket.IO URL (use your computer's IP for mobile testing)
+EXPO_PUBLIC_SOCKET_URL=http://192.168.1.100:5000
 ```
 
-### 5. Run the Application
+### 4. Run the Application
 
-**Option A: Single Web Instance (Recommended)**
+**Web + Server (Recommended):**
 ```bash
 npm run dev:all
 ```
-- Frontend: http://localhost:3001 (open 2 tabs)
+- Frontend: http://localhost:3001
 - Backend: http://localhost:5000
 
-**Option B: Two Web Instances**
-```bash
-npm run dev:all:two-web
-```
-- Frontend A: http://localhost:3001
-- Frontend B: http://localhost:3002
-- Backend: http://localhost:5000
-
-## How to Use
-
-1. **Create Account or Login**
-   - Visit the landing page
-   - Click "Get Started" to go to login page
-   - Create account or sign in with existing credentials
-
-2. **Join a Session**
-   - Enter the same session ID in both browser tabs/devices
-   - Click "Join Session"
-
-3. **Set Preferences**
-   - Select cuisine types (Italian, Mexican, etc.)
-   - Choose price range ($, $$, $$$, $$$$)
-   - Toggle "Open Now" if needed
-
-4. **Set Start Locations**
-   - Enter your starting address
-   - Click "Share Start" to broadcast to other users
-
-5. **Find Restaurants**
-   - Click "Find Restaurants"
-   - App finds restaurants between all users' locations
-   - Results show on map and in list below
+Open `http://localhost:3001` in two browser tabs to test collaboration.
 
 ## Available Scripts
 
+### Development Scripts
 ```bash
-# Install all dependencies
-npm install
-
-# Run frontend + backend together
-npm run dev:all
-
-# Run with two frontend instances
-npm run dev:all:two-web
-
-# Run individual services
-npm run dev:web      # Frontend only
-npm run dev:server   # Backend only
-
-# Build for production
-npm run build        # Build both frontend and backend
-npm run build:web    # Build frontend only
-npm run build:server # Build backend only
-
-# Production scripts
-npm run start:prod   # Start both in production mode
-npm run install:all  # Install all dependencies
-npm run clean        # Clean build artifacts
+npm run dev:web         # Web app only (port 3001)
+npm run dev:server      # Backend server only (port 5000)
+npm run dev:mobile      # Mobile app only (Expo)
+npm run dev:all         # Web + Server
+npm run dev:all:mobile  # Mobile + Server
+npm run dev:full        # All three: Web + Mobile + Server
 ```
 
-## Deployment
-
-**📚 For complete deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
-
-Quick overview:
-1. Deploy backend to **Railway** (`apps/server`)
-2. Deploy frontend to **Vercel** (`apps/web`)
-3. Update CORS in `apps/server/config/production.js`
-4. Configure Firebase & Google Maps for production domains
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions and troubleshooting.
-
-## Development Workflow
-
-### Working with Components
-
-#### Adding New Features
-1. **Create Hook** (`apps/web/src/hooks/useNewFeature.js`)
-   ```javascript
-   export function useNewFeature() {
-     // Business logic here
-     return { state, actions };
-   }
-   ```
-
-2. **Create Component** (`apps/web/src/components/NewFeature.jsx`)
-   ```javascript
-   export default function NewFeature({ onAction }) {
-     // UI logic here
-     return <div>...</div>;
-   }
-   ```
-
-3. **Integrate in Map.jsx**
-   ```javascript
-   import { useNewFeature } from '../hooks/useNewFeature';
-   import NewFeature from './NewFeature';
-   ```
-
-#### Debugging Components
-- **LobbyManager**: Session joining issues → Check `useSession.js`
-- **PreferencesPanel**: Preference sync → Check `usePreferences.js`
-- **LocationControls**: Route calculation → Check `useRouting.js`
-- **RestaurantList**: Search results → Check `useRestaurants.js`
-- **MapView**: Map display → Check Google Maps API integration
-
-#### Testing Individual Components
+### Build Scripts
 ```bash
-# Each component can be tested in isolation
-# Create test files in apps/web/src/components/__tests__/
+npm run build:web     # Build web app for production
+npm run build:mobile  # Build mobile app
+npm run build:all     # Build web + server + mobile
+```
+
+### Code Quality Scripts
+```bash
+npm run lint          # Run ESLint on all apps
+npm run lint:fix      # Run ESLint with auto-fix
+npm run format        # Format all code with Prettier
+npm run test          # Run all tests
 ```
 
 ## Tech Stack
 
-### Frontend (`apps/web/`)
+### Frontend Web App (`apps/web/`)
 - **Next.js 15** - React framework
-- **React 18** - UI library
+- **React 19** - UI library
 - **Firebase Auth** - Authentication service
 - **@react-google-maps/api** - Google Maps integration
-- **Tailwind CSS** - Styling (configured)
 - **Socket.IO Client** - Real-time communication
 
-### Backend (`apps/server/`)
+### Frontend Mobile App (`apps/mobile/`)
+- **Expo 54** - React Native development platform
+- **React Native 0.81** - Mobile UI framework
+- **React Navigation 7** - Navigation library
+- **React Native Maps** - Mobile maps integration
+- **Firebase Auth** - Authentication service
+- **Socket.IO Client** - Real-time communication
+
+### Backend API Server (`apps/server/`)
 - **Node.js** - Runtime
-- **Express** - Web framework
-- **Socket.IO** - WebSocket communication
-- **Mongoose** - MongoDB ODM
+- **Express 5** - Web framework
+- **Socket.IO 4** - WebSocket communication
+- **Mongoose 8** - MongoDB ODM
 - **MongoDB Atlas** - Cloud database
-- **CORS** - Cross-origin requests
-- **dotenv** - Environment variables
 
+### Development Tools
+- **npm Workspaces** - Monorepo dependency management
+- **ESLint + Prettier** - Code linting and formatting
+- **Husky + lint-staged** - Git hooks for code quality
+- **Jest** - Testing framework
+- **GitHub Actions** - CI/CD pipeline
 
+## How to Use
 
+1. **Create Account or Login** - Visit the landing page and click "Get Started"
+2. **Join a Session** - Enter the same session ID in multiple browser tabs/devices
+3. **Set Preferences** - Select cuisine types, price range, and dietary restrictions
+4. **Set Start Locations** - Enter your starting address and share with the group
+5. **Find Restaurants** - Click "Find Restaurants" to discover places that match everyone's preferences
 
+## Deployment
 
-### Data Flow Architecture
-```
-User Action → Component → Hook → localStorage/BroadcastChannel → Other Components
-```
-
-#### Detailed Flow:
-1. **Session Management**: Users join sessions via session IDs
-2. **Preference Sync**: Food preferences stored locally + broadcast via `BroadcastChannel`
-3. **Location Processing**: Start locations geocoded to coordinates
-4. **Midpoint Calculation**: Geographic center calculated between all user locations
-5. **Restaurant Search**: Google Places API searches based on common preferences
-6. **Results Processing**: Results filtered by preferences and sorted by fairness
-7. **Display Updates**: All connected users see synchronized results
-
-### Real-time Features
-- **Cross-tab Sync**: `BroadcastChannel` for same-browser communication
-- **Multi-device Sync**: Socket.IO for different devices/browsers
-- **Data Persistence**: `localStorage` for session continuity
-- **Live Updates**: Real-time preference and location sharing
-
-## Troubleshooting
-
-### "This page can't load Google Maps correctly"
-1. Verify API key is correct in `apps/web/.env.local`
-2. Check billing is enabled in Google Cloud
-3. Ensure Maps JavaScript API is enabled
-4. Verify HTTP referrer restrictions include your localhost URLs
-5. Restart development server after env changes
-
-### Port Already in Use
-```bash
-# Kill processes on specific ports
-kill -9 $(lsof -t -i:3001)
-kill -9 $(lsof -t -i:5000)
-```
-
-### Cross-tab Sync Not Working
-- Ensure both tabs use the same origin (same port)
-- `BroadcastChannel` only works within same origin
-- Use single web instance with two tabs instead of two ports
-
-## Environment Variables
-
-### Frontend (`apps/web/.env.local`)
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Yes | Google Maps API key |
-| `NEXT_PUBLIC_SOCKET_URL` | Yes | Backend Socket.IO URL |
-
-### Backend (`apps/server/.env`)
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGO_URI` | No | MongoDB connection string |
-| `PORT` | No | Server port (default: 5000) |
-
+- **Web Frontend**: Deploy to **Vercel** (`apps/web`)
+- **Mobile App**: Build with **Expo** and distribute via app stores (`apps/mobile`)
+- **Backend API**: Deploy to **Railway** or **Render** (`apps/server`)
+- **Database**: **MongoDB Atlas** (cloud)

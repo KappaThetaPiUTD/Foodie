@@ -1,0 +1,82 @@
+version: 2
+updates:
+  # Root dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "aadhavmanimurugan"
+    assignees:
+      - "aadhavmanimurugan"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # Web app dependencies
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "aadhavmanimurugan"
+    assignees:
+      - "aadhavmanimurugan"
+    commit-message:
+      prefix: "chore(web)"
+      include: "scope"
+
+  # Server dependencies
+  - package-ecosystem: "npm"
+    directory: "/apps/server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "aadhavmanimurugan"
+    assignees:
+      - "aadhavmanimurugan"
+    commit-message:
+      prefix: "chore(server)"
+      include: "scope"
+
+  # Mobile app dependencies
+  - package-ecosystem: "npm"
+    directory: "/apps/mobile"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "aadhavmanimurugan"
+    assignees:
+      - "aadhavmanimurugan"
+    commit-message:
+      prefix: "chore(mobile)"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "aadhavmanimurugan"
+    assignees:
+      - "aadhavmanimurugan"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+

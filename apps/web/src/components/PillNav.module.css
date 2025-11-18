@@ -1,0 +1,314 @@
+/* PillNav Container - Positioned as overlay */
+.pill-nav-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.pill-nav-container * {
+  pointer-events: auto;
+}
+
+/* Main Navigation */
+.pill-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin: 1.5rem auto;
+  max-width: fit-content;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 100px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pill-nav:hover {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Logo */
+.pill-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+
+.pill-logo:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.pill-logo img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Navigation Items */
+.pill-nav-items {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.pill-list {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Individual Pills */
+.pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  user-select: none;
+}
+
+.pill.is-active {
+  background: linear-gradient(135deg, rgba(134, 239, 172, 0.4), rgba(187, 247, 208, 0.4));
+  border-color: rgba(134, 239, 172, 0.6);
+  color: #065f46;
+  font-weight: 600;
+}
+
+.pill:hover {
+  background: rgba(249, 250, 251, 1);
+  border-color: rgba(209, 213, 219, 0.5);
+  color: #111827;
+}
+
+/* Hover Circle Animation */
+.hover-circle {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  border-radius: 50%;
+  background: var(--pill-bg, #111827);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Label Stack */
+.label-stack {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  height: 1.2em;
+}
+
+.pill-label,
+.pill-label-hover {
+  display: block;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.pill-label {
+  color: #111827;
+}
+
+.pill-label-hover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--hover-text, #ffffff);
+  font-weight: 600;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-button {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-button:hover {
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hamburger-line {
+  width: 18px;
+  height: 2px;
+  background: #111827;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+/* Mobile Menu Popover */
+.mobile-menu-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90%, 400px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 24px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  visibility: hidden;
+  opacity: 0;
+}
+
+.mobile-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+.mobile-menu-link {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: #111827;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-link:hover {
+  background: rgba(249, 250, 251, 0.9);
+  color: #111827;
+}
+
+.mobile-menu-link.is-active {
+  background: linear-gradient(135deg, rgba(134, 239, 172, 0.35), rgba(187, 247, 208, 0.35));
+  color: #065f46;
+  font-weight: 600;
+}
+
+/* Responsive - Show/Hide Elements */
+@media (max-width: 768px) {
+  .pill-nav {
+    padding: 0.75rem 1.25rem;
+    margin: 1rem auto;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .pill-nav-container {
+    padding: 0 0.5rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: flex !important;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .pill-nav,
+  .pill,
+  .pill-logo,
+  .mobile-menu-button,
+  .mobile-menu-link,
+  .hover-circle,
+  .pill-label,
+  .pill-label-hover {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Focus Styles */
+.pill:focus-visible,
+.pill-logo:focus-visible,
+.mobile-menu-button:focus-visible,
+.mobile-menu-link:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}
+
+/* Button Reset for Pill Buttons */
+button.pill {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  width: auto;
+  color: inherit;
+  background: inherit;
+  border: inherit;
+}
+
+button.mobile-menu-link {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  width: 100%;
+  text-align: left;
+  padding: 1rem 1.5rem;
+  display: block;
+  color: inherit;
+  background: inherit;
+  border: inherit;
+}
