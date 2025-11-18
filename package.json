@@ -32,7 +32,7 @@
     "lint:fix": "eslint apps/*/src --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"apps/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"apps/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "prepare": "husky install",
+    "prepare": "husky install || true",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
